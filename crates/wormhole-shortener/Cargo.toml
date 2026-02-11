@@ -17,3 +17,5 @@ serde = { version = "1.0.228", features = ["derive"] }
 jiff = { version = "0.2.19", features = ["serde"] }
 tokio = { workspace = true }
 dashmap = "6"
+# Random for shortcode generation
+rand = "0.8"
