@@ -7,10 +7,13 @@
 }:
 
 {
+  env.PROTOC = lib.getExe pkgs.protobuf;
+
   # https://devenv.sh/packages/
   packages = with pkgs; [
     cargo-deny
     cargo-machete
+    protobuf
   ];
 
   # https://devenv.sh/languages/

@@ -5,3 +5,13 @@ edition.workspace = true
 
 [dependencies]
 tokio = { workspace = true }
+# gRPC
+tonic = { workspace = true }
+prost = { workspace = true }
+tonic-prost = { workspace = true }
+# tracing
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+
+[build-dependencies]
+tonic-prost-build = { workspace = true }
