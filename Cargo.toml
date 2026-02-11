@@ -8,14 +8,23 @@ resolver = "2"
 members = ["crates/*"]
 
 [workspace.dependencies]
+# workspace members
+wormhole-proto-schema = { path = "crates/wormhole-proto-schema" }
+wormhole-gateway = { path = "crates/wormhole-gateway" }
+
+# async runtime
 tokio = { version = "1", features = ["full"] }
 
 # gRPC
 tonic = { version = "0.14.3" }
 prost = { version = "0.14.3" }
+prost-types = { version = "0.14.3" }
 tonic-prost = { version = "0.14.3" }
 tonic-prost-build = { version = "0.14.3" }
 
 # Tracing
 tracing = { version = "0.1.41" }
 tracing-subscriber = "0.3.22"
+
+# Serialization
+serde = { version = "1.0", features = ["derive"] }
