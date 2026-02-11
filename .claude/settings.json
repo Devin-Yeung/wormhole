@@ -5,6 +5,7 @@
       "Bash(cargo test *)",
       "Bash(cargo build *)",
       "Bash(cargo clippy *)",
+      "Bash(cargo check *)",
       "Bash(ls*)"
     ],
     "deny": [
