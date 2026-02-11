@@ -1,21 +1,23 @@
 use crate::error::Result;
+use crate::repository::UrlRecord;
 use crate::shortcode::ShortCode;
 use async_trait::async_trait;
-use jiff::{SignedDuration, Timestamp};
-use serde::{Deserialize, Serialize};
+use jiff::Timestamp;
+use std::time::Duration;
 
 /// Expiration policy for a shortened URL.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone)]
 pub enum ExpirationPolicy {
     /// The shortened URL never expires.
     Never,
-    /// The shortened URL expires after a certain duration.
-    AfterDuration(SignedDuration),
+    /// The shortened URL expires after a certain duration from now.
+    AfterDuration(Duration),
     /// The shortened URL expires at a specific timestamp.
     AtTimestamp(Timestamp),
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+/// Parameters for creating a shortened URL.
+#[derive(Debug, Clone)]
 pub struct ShortenParams {
     /// The original URL to be shortened.
     pub original_url: String,
@@ -27,9 +29,14 @@ pub struct ShortenParams {
 
 #[async_trait]
 pub trait Shortener: Send + Sync + 'static {
-    /// Shortens a given URL based on the provided parameters and returns the generated short code.
+    /// Creates a shortened URL and returns the generated short code.
     async fn shorten(&self, params: ShortenParams) -> Result<ShortCode>;
 
-    /// Retrieves the original URL associated with the given short code.
-    async fn get(&self, id: &ShortCode) -> Result<Option<String>>;
+    /// Resolves a short code to its stored URL record.
+    /// Returns `None` if the code does not exist or has expired.
+    async fn resolve(&self, code: &ShortCode) -> Result<Option<UrlRecord>>;
+
+    /// Deletes a shortened URL by its short code.
+    /// Returns `true` if the record existed and was removed.
+    async fn delete(&self, code: &ShortCode) -> Result<bool>;
 }
