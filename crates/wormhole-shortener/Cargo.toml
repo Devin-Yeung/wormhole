@@ -1,0 +1,17 @@
+[package]
+name = "wormhole-shortener"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+# Workspace members
+wormhole-proto-schema = { workspace = true }
+# Error handling
+thiserror = { workspace = true }
+# Async
+async-trait = "0.1.89"
+# Serialization
+serde = { version = "1.0.228", features = ["derive"] }
+# Time
+jiff = { version = "0.2.19", features = ["serde"] }
