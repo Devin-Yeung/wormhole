@@ -15,3 +15,5 @@ async-trait = "0.1.89"
 serde = { version = "1.0.228", features = ["derive"] }
 # Time
 jiff = { version = "0.2.19", features = ["serde"] }
+tokio = { workspace = true }
+dashmap = "6"
