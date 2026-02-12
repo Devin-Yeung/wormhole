@@ -18,7 +18,7 @@ impl Clone for UniqueGenerator {
     fn clone(&self) -> Self {
         Self {
             counter: std::sync::atomic::AtomicU64::new(
-                self.counter.load(std::sync::atomic::Ordering::SeqCst)
+                self.counter.load(std::sync::atomic::Ordering::SeqCst),
             ),
             prefix: self.prefix.clone(),
         }
@@ -26,14 +26,6 @@ impl Clone for UniqueGenerator {
 }
 
 impl UniqueGenerator {
-    /// Creates a new unique generator with default prefix.
-    pub fn new() -> Self {
-        Self {
-            counter: std::sync::atomic::AtomicU64::new(0),
-            prefix: "wh".to_string(),
-        }
-    }
-
     /// Creates a new unique generator with a custom prefix.
     ///
     /// For distributed deployments, use unique prefixes per node
@@ -57,12 +49,6 @@ impl UniqueGenerator {
     }
 }
 
-impl Default for UniqueGenerator {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
 impl Generator for UniqueGenerator {
     fn generate(&self) -> ShortCode {
         let count = self
@@ -80,7 +66,7 @@ mod tests {
 
     #[test]
     fn unique_generator_produces_sequential_codes() {
-        let generator = UniqueGenerator::new();
+        let generator = UniqueGenerator::with_prefix("wh");
 
         let code1 = generator.generate();
         let code2 = generator.generate();
@@ -121,7 +107,7 @@ mod tests {
 
     #[test]
     fn clone_preserves_counter_state() {
-        let generator = UniqueGenerator::new();
+        let generator = UniqueGenerator::with_prefix("wh");
         generator.generate();
         generator.generate();
 

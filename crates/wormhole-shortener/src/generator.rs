@@ -14,4 +14,3 @@ pub trait Generator: Send + Sync + 'static {
     /// The generated code should be unique
     fn generate(&self) -> ShortCode;
 }
-
