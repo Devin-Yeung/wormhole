@@ -1,5 +1,5 @@
 //! Repository implementations with caching support.
 
-pub mod redis;
+pub mod cached;
 
-pub use redis::CachedRepository;
+pub use cached::CachedRepository;

@@ -7,8 +7,7 @@
 //! # Example usage
 //!
 //! ```rust,no_run
-//! use wormhole_redirector::RedirectorService;
-//! use wormhole_redirector::repository::CachedRepository;
+//! use wormhole_redirector::{RedirectorService, RedisUrlCache, CachedRepository};
 //! use wormhole_core::InMemoryRepository;
 //! use wormhole_core::ShortCode;
 //!
@@ -19,7 +18,8 @@
 //!
 //! // Create repository with Redis caching
 //! let inner_repo = InMemoryRepository::new();
-//! let cached_repo = CachedRepository::new(inner_repo, redis_conn, None);
+//! let cache = RedisUrlCache::new(redis_conn);
+//! let cached_repo = CachedRepository::new(inner_repo, cache, None);
 //!
 //! // Create redirector service
 //! let service = RedirectorService::new(cached_repo);
@@ -33,7 +33,10 @@
 //! # }
 //! ```
 
+pub mod cache;
 pub mod repository;
 pub mod service;
 
+pub use cache::RedisUrlCache;
+pub use repository::CachedRepository;
 pub use service::RedirectorService;

@@ -7,7 +7,7 @@ use jiff::Timestamp;
 use serde::{Deserialize, Serialize};
 
 /// A stored URL record in the repository.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct UrlRecord {
     /// The original URL that was shortened.
     pub original_url: String,
