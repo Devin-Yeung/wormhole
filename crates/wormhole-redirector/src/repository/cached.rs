@@ -58,6 +58,15 @@ impl<R: ReadRepository, C: UrlCache> CachedRepository<R, C> {
     pub fn cache(&self) -> &C {
         &self.cache
     }
+
+    /// Invalidate a cached entry.
+    ///
+    /// This is useful when the underlying data may have changed
+    /// and you want to ensure the next read fetches fresh data.
+    pub async fn invalidate(&self, code: &ShortCode) -> Result<()> {
+        trace!(code = %code, "Invalidating cache entry");
+        self.cache.del(code).await
+    }
 }
 
 #[async_trait]
@@ -96,19 +105,19 @@ impl<R: ReadRepository, C: UrlCache> ReadRepository for CachedRepository<R, C> {
     }
 
     async fn exists(&self, code: &ShortCode) -> Result<bool> {
-        trace!(code = %code, "Checking existence in cache");
+        trace!(code = %code, "Checking existence via get");
 
-        // Check cache first
-        match self.cache.exists(code).await {
-            Ok(true) => {
-                debug!(code = %code, "Cache indicates code exists");
+        // Use get_url for existence check - if it returns Some, it exists
+        match self.cache.get_url(code).await {
+            Ok(Some(_)) => {
+                debug!(code = %code, "Cache hit indicates code exists");
                 return Ok(true);
             }
-            Ok(false) => {
+            Ok(None) => {
                 trace!(code = %code, "Cache miss for existence check");
             }
             Err(e) => {
-                warn!(code = %code, error = %e, "Cache error on exists check, falling back to inner repository");
+                warn!(code = %code, error = %e, "Cache error on existence check, falling back to inner repository");
             }
         }
 
@@ -120,45 +129,8 @@ impl<R: ReadRepository, C: UrlCache> ReadRepository for CachedRepository<R, C> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::cache::MokaUrlCache;
     use wormhole_core::{InMemoryRepository, Repository};
-
-    /// A mock cache for testing without external dependencies.
-    #[derive(Debug, Clone)]
-    struct MockCache {
-        data: std::sync::Arc<std::sync::Mutex<std::collections::HashMap<String, UrlRecord>>>,
-    }
-
-    impl MockCache {
-        fn new() -> Self {
-            Self {
-                data: std::sync::Arc::new(std::sync::Mutex::new(std::collections::HashMap::new())),
-            }
-        }
-    }
-
-    #[async_trait]
-    impl UrlCache for MockCache {
-        async fn get_url(&self, code: &ShortCode) -> Result<Option<UrlRecord>> {
-            let data = self.data.lock().unwrap();
-            Ok(data.get(code.as_str()).cloned())
-        }
-
-        async fn set_url(
-            &self,
-            code: &ShortCode,
-            record: &UrlRecord,
-            _ttl: Option<Duration>,
-        ) -> Result<()> {
-            let mut data = self.data.lock().unwrap();
-            data.insert(code.as_str().to_string(), record.clone());
-            Ok(())
-        }
-
-        async fn exists(&self, code: &ShortCode) -> Result<bool> {
-            let data = self.data.lock().unwrap();
-            Ok(data.contains_key(code.as_str()))
-        }
-    }
 
     fn code(s: &str) -> ShortCode {
         ShortCode::new_unchecked(s)
@@ -171,9 +143,12 @@ mod tests {
         }
     }
 
-    fn test_service() -> (CachedRepository<InMemoryRepository, MockCache>, MockCache) {
+    fn test_service() -> (
+        CachedRepository<InMemoryRepository, MokaUrlCache>,
+        MokaUrlCache,
+    ) {
         let inner = InMemoryRepository::new();
-        let cache = MockCache::new();
+        let cache = MokaUrlCache::new();
         let cached = CachedRepository::new(inner, cache.clone(), None);
         (cached, cache)
     }
@@ -215,7 +190,7 @@ mod tests {
         // Pre-populate cache
         cache.set_url(&c, &record, None).await.unwrap();
 
-        // Should return true from cache
+        // Should return true from cache via get_url
         assert!(cached.exists(&c).await.unwrap());
     }
 
@@ -247,5 +222,31 @@ mod tests {
         // Now cache should have the record
         let cached_record = cache.get_url(&c).await.unwrap();
         assert_eq!(cached_record, Some(record));
+    }
+
+    #[tokio::test]
+    async fn invalidate_removes_from_cache() {
+        let (cached, cache) = test_service();
+        let c = code("abc123");
+        let record = test_record("https://example.com");
+
+        // Pre-populate cache
+        cache.set_url(&c, &record, None).await.unwrap();
+        assert!(cache.get_url(&c).await.unwrap().is_some());
+
+        // Invalidate
+        cached.invalidate(&c).await.unwrap();
+
+        // Should be gone from cache
+        assert!(cache.get_url(&c).await.unwrap().is_none());
+    }
+
+    #[tokio::test]
+    async fn invalidate_is_idempotent() {
+        let (cached, _cache) = test_service();
+        let c = code("abc123");
+
+        // Invalidate non-existent key should not error
+        cached.invalidate(&c).await.unwrap();
     }
 }

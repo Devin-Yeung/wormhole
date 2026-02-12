@@ -27,9 +27,9 @@ pub trait UrlCache: Send + Sync + 'static {
         ttl: Option<Duration>,
     ) -> Result<()>;
 
-    /// Check if short code exists in cache.
+    /// Remove URL record from cache.
     ///
-    /// Returns `true` if the code exists in the cache, `false` otherwise.
-    /// Note that this does not check the underlying repository.
-    async fn exists(&self, code: &ShortCode) -> Result<bool>;
+    /// Essential for handling URL updates or deletions.
+    /// It is not an error if the key does not exist.
+    async fn del(&self, code: &ShortCode) -> Result<()>;
 }

@@ -114,22 +114,18 @@ impl UrlCache for RedisUrlCache {
         }
     }
 
-    async fn exists(&self, code: &ShortCode) -> Result<bool> {
+    async fn del(&self, code: &ShortCode) -> Result<()> {
         let key = self.cache_key(code);
-        trace!(code = %code, "Checking existence in Redis cache");
+        trace!(code = %code, "Removing URL record from Redis cache");
 
         let mut conn = self.conn.clone();
-        match conn.exists::<_, bool>(&key).await {
-            Ok(exists) => {
-                if exists {
-                    debug!(code = %code, "Cache indicates code exists in Redis");
-                } else {
-                    trace!(code = %code, "Cache miss for existence check in Redis");
-                }
-                Ok(exists)
+        match conn.del::<_, ()>(&key).await {
+            Ok(()) => {
+                debug!(code = %code, "Removed record from Redis cache");
+                Ok(())
             }
             Err(e) => {
-                warn!(code = %code, error = %e, "Redis error on exists check");
+                warn!(code = %code, error = %e, "Failed to remove record from Redis cache");
                 Err(wormhole_core::Error::Storage(Box::new(e)))
             }
         }
