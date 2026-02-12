@@ -1,11 +1,10 @@
-use crate::error::{Error, Result};
 use crate::generator::Generator;
-use crate::repository::{Repository, UrlRecord};
-use crate::shortcode::ShortCode;
-use crate::shortener::{ExpirationPolicy, ShortenParams, Shortener};
 use async_trait::async_trait;
 use jiff::Timestamp;
 use std::sync::Arc;
+use wormhole_core::{
+    Error, ExpirationPolicy, Repository, Result, ShortCode, ShortenParams, Shortener, UrlRecord,
+};
 
 /// A concrete implementation of the `Shortener` trait.
 ///
@@ -122,7 +121,7 @@ impl<R: Repository, G: Generator> Shortener for ShortenerService<R, G> {
 mod tests {
     use super::*;
     use crate::generator::seq::UniqueGenerator;
-    use crate::repository::memory::InMemoryRepository;
+    use wormhole_core::InMemoryRepository;
 
     fn test_service() -> ShortenerService<InMemoryRepository, UniqueGenerator> {
         let repo = InMemoryRepository::new();

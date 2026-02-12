@@ -9,8 +9,11 @@ members = ["crates/*"]
 
 [workspace.dependencies]
 # workspace members
+wormhole-core = { path = "crates/wormhole-core" }
 wormhole-proto-schema = { path = "crates/wormhole-proto-schema" }
 wormhole-gateway = { path = "crates/wormhole-gateway" }
+wormhole-shortener = { path = "crates/wormhole-shortener" }
+wormhole-redirector = { path = "crates/wormhole-redirector" }
 
 # async runtime
 tokio = { version = "1", features = ["full"] }
@@ -31,3 +34,9 @@ serde = { version = "1.0", features = ["derive"] }
 
 # Error handling
 thiserror = { version = "2.0" }
+
+# Time
+jiff = { version = "0.2.19", features = ["serde"] }
+
+# Async trait
+async-trait = "0.1.89"

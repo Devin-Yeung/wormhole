@@ -1,6 +1,6 @@
 pub mod seq;
 
-use crate::shortcode::ShortCode;
+use wormhole_core::ShortCode;
 
 /// Trait for generating short codes.
 ///

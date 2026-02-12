@@ -1,5 +1,5 @@
 use crate::error::{Error, Result};
-use crate::repository::{Repository, UrlRecord};
+use crate::repository::{ReadRepository, Repository, UrlRecord};
 use crate::shortcode::ShortCode;
 use async_trait::async_trait;
 use dashmap::DashMap;
@@ -59,6 +59,41 @@ impl Default for InMemoryRepository {
 }
 
 #[async_trait]
+impl ReadRepository for InMemoryRepository {
+    async fn get(&self, code: &ShortCode) -> Result<Option<UrlRecord>> {
+        let key = code.as_str();
+
+        let Some(entry) = self.storage.get(key) else {
+            return Ok(None);
+        };
+
+        if entry.is_expired() {
+            drop(entry);
+            self.storage.remove(key);
+            return Ok(None);
+        }
+
+        Ok(Some(entry.clone().into_record()))
+    }
+
+    async fn exists(&self, code: &ShortCode) -> Result<bool> {
+        let key = code.as_str();
+
+        let Some(entry) = self.storage.get(key) else {
+            return Ok(false);
+        };
+
+        if entry.is_expired() {
+            drop(entry);
+            self.storage.remove(key);
+            return Ok(false);
+        }
+
+        Ok(true)
+    }
+}
+
+#[async_trait]
 impl Repository for InMemoryRepository {
     async fn insert(&self, code: &ShortCode, record: UrlRecord) -> Result<()> {
         let key = code.as_str().to_owned();
@@ -81,40 +116,8 @@ impl Repository for InMemoryRepository {
         Ok(())
     }
 
-    async fn get(&self, code: &ShortCode) -> Result<Option<UrlRecord>> {
-        let key = code.as_str();
-
-        let Some(entry) = self.storage.get(key) else {
-            return Ok(None);
-        };
-
-        if entry.is_expired() {
-            drop(entry);
-            self.storage.remove(key);
-            return Ok(None);
-        }
-
-        Ok(Some(entry.clone().into_record()))
-    }
-
     async fn delete(&self, code: &ShortCode) -> Result<bool> {
         Ok(self.storage.remove(code.as_str()).is_some())
-    }
-
-    async fn exists(&self, code: &ShortCode) -> Result<bool> {
-        let key = code.as_str();
-
-        let Some(entry) = self.storage.get(key) else {
-            return Ok(false);
-        };
-
-        if entry.is_expired() {
-            drop(entry);
-            self.storage.remove(key);
-            return Ok(false);
-        }
-
-        Ok(true)
     }
 }
 

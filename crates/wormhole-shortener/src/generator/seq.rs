@@ -1,5 +1,5 @@
 use crate::generator::Generator;
-use crate::shortcode::ShortCode;
+use wormhole_core::ShortCode;
 
 /// A globally unique short code generator using sequential counters.
 ///

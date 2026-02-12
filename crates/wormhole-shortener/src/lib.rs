@@ -1,6 +1,16 @@
-pub mod error;
+//! URL shortener service implementation.
+//!
+//! This crate provides the shortener service implementation and the
+//! code generator trait. Core types are re-exported from `wormhole_core`.
+
 pub mod generator;
-pub mod repository;
 pub mod service;
-pub mod shortcode;
-pub mod shortener;
+
+// Re-export core types
+pub use wormhole_core::{
+    error, shortcode, shortener, Error, ExpirationPolicy, ReadRepository, Repository, Result,
+    ShortCode, ShortenParams, Shortener, UrlRecord,
+};
+
+// Re-export InMemoryRepository from core
+pub use wormhole_core::InMemoryRepository;

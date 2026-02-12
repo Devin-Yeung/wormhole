@@ -1,0 +1,27 @@
+[package]
+name = "wormhole-core"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+# Async runtime
+tokio = { workspace = true }
+
+# Serialization
+serde = { workspace = true }
+
+# Time
+jiff = { workspace = true }
+
+# Error handling
+thiserror = { workspace = true }
+
+# Async trait
+async-trait = { workspace = true }
+
+# Concurrency
+dashmap = "6"
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["full"] }
