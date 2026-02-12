@@ -19,7 +19,7 @@
 //! // Create repository with Redis caching
 //! let inner_repo = InMemoryRepository::new();
 //! let cache = RedisUrlCache::new(redis_conn);
-//! let cached_repo = CachedRepository::new(inner_repo, cache, None);
+//! let cached_repo = CachedRepository::new(inner_repo, cache);
 //!
 //! // Create redirector service
 //! let service = RedirectorService::new(cached_repo);
@@ -44,7 +44,7 @@
 //! // Create repository with Moka in-memory caching
 //! let inner_repo = InMemoryRepository::new();
 //! let cache = MokaUrlCache::new();
-//! let cached_repo = CachedRepository::new(inner_repo, cache, None);
+//! let cached_repo = CachedRepository::new(inner_repo, cache);
 //!
 //! // Create redirector service
 //! let service = RedirectorService::new(cached_repo);

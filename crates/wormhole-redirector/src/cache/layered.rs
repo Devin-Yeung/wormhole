@@ -1,5 +1,4 @@
 use async_trait::async_trait;
-use std::time::Duration;
 use tracing::{debug, trace};
 use wormhole_core::{Result, ShortCode, UrlCache, UrlRecord};
 
@@ -93,21 +92,8 @@ where
             Some(record) => {
                 debug!(code = %code, "L2 cache hit, backfilling L1");
                 // Backfill L1 with the record from L2
-                // We use the record's expiration as TTL if available, otherwise no TTL
-                let ttl = record.expire_at.and_then(|expire_at| {
-                    let now = jiff::Timestamp::now();
-                    // Calculate the span between now and expiration
-                    let span: jiff::Span = expire_at - now;
-                    // Convert to seconds (approximate for TTL purposes)
-                    let secs = span.get_seconds();
-                    if secs > 0 {
-                        Some(Duration::from_secs(secs as u64))
-                    } else {
-                        None
-                    }
-                });
                 // Ignore errors from L1 set - L2 hit is already a success
-                let _ = self.l1.set_url(code, &record, ttl).await;
+                let _ = self.l1.set_url(code, &record).await;
                 Ok(Some(record))
             }
             None => {
@@ -117,20 +103,15 @@ where
         }
     }
 
-    async fn set_url(
-        &self,
-        code: &ShortCode,
-        record: &UrlRecord,
-        ttl: Option<Duration>,
-    ) -> Result<()> {
+    async fn set_url(&self, code: &ShortCode, record: &UrlRecord) -> Result<()> {
         trace!(code = %code, "Storing URL record in layered cache");
 
         // Write to L2 first (slower, more durable), then L1
-        self.l2.set_url(code, record, ttl).await?;
+        self.l2.set_url(code, record).await?;
         debug!(code = %code, "Stored in L2 cache");
 
         // Also write to L1
-        self.l1.set_url(code, record, ttl).await?;
+        self.l1.set_url(code, record).await?;
         debug!(code = %code, "Stored in L1 cache");
 
         Ok(())
@@ -181,7 +162,7 @@ mod tests {
         let record = test_record("https://example.com");
 
         // Insert directly into L1
-        cache.l1.set_url(&c, &record, None).await.unwrap();
+        cache.l1.set_url(&c, &record).await.unwrap();
 
         // Should get from L1
         let result = cache.get_url(&c).await.unwrap();
@@ -195,7 +176,7 @@ mod tests {
         let record = test_record("https://example.com");
 
         // Insert only into L2
-        cache.l2.set_url(&c, &record, None).await.unwrap();
+        cache.l2.set_url(&c, &record).await.unwrap();
 
         // L1 should be empty initially
         assert!(cache.l1.get_url(&c).await.unwrap().is_none());
@@ -215,7 +196,7 @@ mod tests {
         let record = test_record("https://example.com");
 
         // Set through layered cache
-        cache.set_url(&c, &record, None).await.unwrap();
+        cache.set_url(&c, &record).await.unwrap();
 
         // Should be in both caches
         assert_eq!(cache.l1.get_url(&c).await.unwrap(), Some(record.clone()));
@@ -229,8 +210,8 @@ mod tests {
         let record = test_record("https://example.com");
 
         // Insert into both caches
-        cache.l1.set_url(&c, &record, None).await.unwrap();
-        cache.l2.set_url(&c, &record, None).await.unwrap();
+        cache.l1.set_url(&c, &record).await.unwrap();
+        cache.l2.set_url(&c, &record).await.unwrap();
 
         // Delete through layered cache
         cache.del(&c).await.unwrap();
@@ -263,7 +244,7 @@ mod tests {
         };
 
         // Insert only into L2
-        cache.l2.set_url(&c, &record, None).await.unwrap();
+        cache.l2.set_url(&c, &record).await.unwrap();
 
         // Get should backfill L1
         let result = cache.get_url(&c).await.unwrap();
@@ -297,7 +278,7 @@ mod tests {
         let c = code("abc123");
         let record = test_record("https://example.com");
 
-        inner_l1.set_url(&c, &record, None).await.unwrap();
+        inner_l1.set_url(&c, &record).await.unwrap();
         assert_eq!(inner_l1.get_url(&c).await.unwrap(), Some(record));
     }
 }

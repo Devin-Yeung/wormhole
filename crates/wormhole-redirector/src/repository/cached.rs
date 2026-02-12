@@ -1,5 +1,4 @@
 use async_trait::async_trait;
-use std::time::Duration;
 use tracing::{debug, trace, warn};
 use wormhole_core::{ReadRepository, Result, ShortCode, UrlCache, UrlRecord};
 
@@ -13,7 +12,6 @@ use wormhole_core::{ReadRepository, Result, ShortCode, UrlCache, UrlRecord};
 pub struct CachedRepository<R, C> {
     inner: R,
     cache: C,
-    default_ttl: Option<Duration>,
 }
 
 impl<R: ReadRepository, C: UrlCache> CachedRepository<R, C> {
@@ -23,7 +21,6 @@ impl<R: ReadRepository, C: UrlCache> CachedRepository<R, C> {
     ///
     /// * `inner` - The underlying read-only repository implementation
     /// * `cache` - The cache implementation (e.g., [`RedisUrlCache`])
-    /// * `default_ttl` - Optional default TTL for cached entries
     ///
     /// # Example
     ///
@@ -37,16 +34,12 @@ impl<R: ReadRepository, C: UrlCache> CachedRepository<R, C> {
     ///
     /// let inner_repo = InMemoryRepository::new();
     /// let cache = RedisUrlCache::new(redis_conn);
-    /// let cached_repo = CachedRepository::new(inner_repo, cache, None);
+    /// let cached_repo = CachedRepository::new(inner_repo, cache);
     /// # Ok(())
     /// # }
     /// ```
-    pub fn new(inner: R, cache: C, default_ttl: Option<Duration>) -> Self {
-        Self {
-            inner,
-            cache,
-            default_ttl,
-        }
+    pub fn new(inner: R, cache: C) -> Self {
+        Self { inner, cache }
     }
 
     /// Returns a reference to the inner repository.
@@ -94,7 +87,7 @@ impl<R: ReadRepository, C: UrlCache> ReadRepository for CachedRepository<R, C> {
 
         // 3. Cache result if found
         if let Some(ref record) = result {
-            if let Err(e) = self.cache.set_url(code, record, self.default_ttl).await {
+            if let Err(e) = self.cache.set_url(code, record).await {
                 warn!(code = %code, error = %e, "Failed to cache record");
             } else {
                 debug!(code = %code, "Cached record from inner repository");
@@ -149,7 +142,7 @@ mod tests {
     ) {
         let inner = InMemoryRepository::new();
         let cache = MokaUrlCache::new();
-        let cached = CachedRepository::new(inner, cache.clone(), None);
+        let cached = CachedRepository::new(inner, cache.clone());
         (cached, cache)
     }
 
@@ -174,7 +167,7 @@ mod tests {
         let record = test_record("https://example.com");
 
         // Pre-populate cache
-        cache.set_url(&c, &record, None).await.unwrap();
+        cache.set_url(&c, &record).await.unwrap();
 
         // Should get from cache without hitting inner
         let result = cached.get(&c).await.unwrap();
@@ -188,7 +181,7 @@ mod tests {
         let record = test_record("https://example.com");
 
         // Pre-populate cache
-        cache.set_url(&c, &record, None).await.unwrap();
+        cache.set_url(&c, &record).await.unwrap();
 
         // Should return true from cache via get_url
         assert!(cached.exists(&c).await.unwrap());
@@ -231,7 +224,7 @@ mod tests {
         let record = test_record("https://example.com");
 
         // Pre-populate cache
-        cache.set_url(&c, &record, None).await.unwrap();
+        cache.set_url(&c, &record).await.unwrap();
         assert!(cache.get_url(&c).await.unwrap().is_some());
 
         // Invalidate

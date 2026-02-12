@@ -95,12 +95,7 @@ impl UrlCache for MokaUrlCache {
         }
     }
 
-    async fn set_url(
-        &self,
-        code: &ShortCode,
-        record: &UrlRecord,
-        _ttl: Option<Duration>,
-    ) -> Result<()> {
+    async fn set_url(&self, code: &ShortCode, record: &UrlRecord) -> Result<()> {
         trace!(code = %code, "Storing URL record in Moka cache");
 
         let key = code.as_str().to_string();
@@ -199,7 +194,7 @@ mod tests {
         assert!(cache.get_url(&c).await.unwrap().is_none());
 
         // Insert
-        cache.set_url(&c, &record, None).await.unwrap();
+        cache.set_url(&c, &record).await.unwrap();
 
         // Now it should exist
         let result = cache.get_url(&c).await.unwrap();
@@ -213,7 +208,7 @@ mod tests {
         let record = test_record("https://example.com");
 
         // Insert
-        cache.set_url(&c, &record, None).await.unwrap();
+        cache.set_url(&c, &record).await.unwrap();
         assert!(cache.get_url(&c).await.unwrap().is_some());
 
         // Delete
@@ -245,7 +240,7 @@ mod tests {
         let record = test_record("https://example.com");
 
         // Insert
-        cache.set_url(&c, &record, None).await.unwrap();
+        cache.set_url(&c, &record).await.unwrap();
         assert!(cache.get_url(&c).await.unwrap().is_some());
 
         // Wait for TTL to expire
@@ -266,7 +261,7 @@ mod tests {
         let c = code("abc123");
         let record = test_record("https://example.com");
 
-        cache.set_url(&c, &record, None).await.unwrap();
+        cache.set_url(&c, &record).await.unwrap();
         assert!(cache.get_url(&c).await.unwrap().is_some());
     }
 
@@ -279,7 +274,7 @@ mod tests {
         for i in 0..50 {
             let c = code(&format!("code{}", i));
             let record = test_record(&format!("https://example{}", i));
-            cache.set_url(&c, &record, None).await.unwrap();
+            cache.set_url(&c, &record).await.unwrap();
         }
 
         // Verify some entries exist
@@ -311,7 +306,7 @@ mod tests {
             expire_at: Some(Timestamp::now()),
         };
 
-        cache.set_url(&c, &record, None).await.unwrap();
+        cache.set_url(&c, &record).await.unwrap();
 
         // Get the record twice - should get independent clones
         let r1 = cache.get_url(&c).await.unwrap().unwrap();

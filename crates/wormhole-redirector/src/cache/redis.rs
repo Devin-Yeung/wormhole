@@ -1,6 +1,5 @@
 use async_trait::async_trait;
 use redis::AsyncCommands;
-use std::time::Duration;
 use tracing::{debug, trace, warn};
 use wormhole_core::{Result, ShortCode, UrlCache, UrlRecord};
 
@@ -78,12 +77,7 @@ impl UrlCache for RedisUrlCache {
         }
     }
 
-    async fn set_url(
-        &self,
-        code: &ShortCode,
-        record: &UrlRecord,
-        ttl: Option<Duration>,
-    ) -> Result<()> {
+    async fn set_url(&self, code: &ShortCode, record: &UrlRecord) -> Result<()> {
         let key = self.cache_key(code);
         trace!(code = %code, "Storing URL record in Redis cache");
 
@@ -96,13 +90,7 @@ impl UrlCache for RedisUrlCache {
         };
 
         let mut conn = self.conn.clone();
-        let result = if let Some(ttl) = ttl {
-            conn.set_ex::<_, _, ()>(&key, json, ttl.as_secs()).await
-        } else {
-            conn.set::<_, _, ()>(&key, json).await
-        };
-
-        match result {
+        match conn.set::<_, _, ()>(&key, json).await {
             Ok(()) => {
                 debug!(code = %code, "Cached record in Redis");
                 Ok(())
