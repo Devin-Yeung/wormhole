@@ -29,3 +29,4 @@ tracing = { workspace = true }
 
 [dev-dependencies]
 tokio = { workspace = true, features = ["full"] }
+testcontainers = { version = "0.23", features = ["blocking"] }

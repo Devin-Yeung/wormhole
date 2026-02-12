@@ -119,8 +119,3 @@ impl UrlCache for RedisUrlCache {
         }
     }
 }
-
-// Note: Unit tests that don't require a running Redis instance
-// are tested via the MockCache in cached.rs.
-// Integration tests requiring a running Redis instance
-// would be placed in a separate tests/ directory.
