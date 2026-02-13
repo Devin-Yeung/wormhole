@@ -1,43 +1,29 @@
 use std::time::Duration;
 
 use redis::AsyncCommands;
-use testcontainers::core::{IntoContainerPort, WaitFor};
-use testcontainers::{runners::AsyncRunner, ContainerAsync, GenericImage};
 use wormhole_core::{ShortCode, UrlCache, UrlRecord};
 use wormhole_redirector::cache::RedisUrlCache;
+use wormhole_test_infra::redis::RedisMaster;
 
-/// Test fixture that manages a Redis container with an OS-assigned random port.
+/// Test fixture that manages a Redis container using test-infra.
 pub struct RedisTestContainer {
     #[allow(dead_code)]
-    container: ContainerAsync<GenericImage>,
+    redis: RedisMaster,
     redis_url: String,
 }
 
 impl RedisTestContainer {
     /// Starts a new Redis container with a random available port.
-    /// Waits for Redis to be ready before returning.
     pub async fn start() -> Self {
-        let container = GenericImage::new("redis", "8.6.0")
-            .with_exposed_port(6379_u16.tcp())
-            .with_wait_for(WaitFor::message_on_stdout("Ready to accept connections"))
-            .start()
-            .await
-            .expect("Failed to start Redis container");
-
-        let host = container.get_host().await.expect("Failed to get host");
-        let port = container
-            .get_host_port_ipv4(6379)
-            .await
-            .expect("Failed to get port");
-
+        let redis = RedisMaster::new().await;
+        let host = redis.host().await;
+        let port = redis.port().await;
         let redis_url = format!("redis://{}:{}", host, port);
+
         // Wait a moment to ensure Redis is fully ready
         tokio::time::sleep(Duration::from_millis(500)).await;
 
-        Self {
-            container,
-            redis_url,
-        }
+        Self { redis, redis_url }
     }
 
     /// Creates a new Redis connection.

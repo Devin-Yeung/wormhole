@@ -36,4 +36,4 @@ tracing = { workspace = true }
 
 [dev-dependencies]
 tokio = { workspace = true, features = ["full"] }
-testcontainers = { version = "0.27", features = ["blocking"] }
+wormhole-test-infra = { workspace = true }
