@@ -22,4 +22,30 @@ impl RedisReplica {
             .expect("Failed to start Redis replica container");
         Self { container: replica }
     }
+
+    pub async fn host(&self) -> String {
+        let host = self
+            .container
+            .get_host()
+            .await
+            .expect("Failed to get replica host")
+            .to_string();
+
+        match host.as_str() {
+            "localhost" => String::from("127.0.0.1"),
+            _ => host,
+        }
+    }
+
+    pub async fn port(&self) -> u16 {
+        self.container
+            .get_host_port_ipv4(6379)
+            .await
+            .expect("Failed to get replica port")
+    }
+
+    /// Returns the underlying container reference.
+    pub fn container(&self) -> &ContainerAsync<GenericImage> {
+        &self.container
+    }
 }

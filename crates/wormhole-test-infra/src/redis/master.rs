@@ -18,11 +18,17 @@ impl RedisMaster {
     }
 
     pub async fn host(&self) -> String {
-        self.container
+        let host = self
+            .container
             .get_host()
             .await
-            .expect("Failed to get master host")
-            .to_string()
+            .expect("Failed to get replica host")
+            .to_string();
+
+        match host.as_str() {
+            "localhost" => String::from("127.0.0.1"),
+            _ => host,
+        }
     }
 
     pub async fn port(&self) -> u16 {
@@ -30,5 +36,10 @@ impl RedisMaster {
             .get_host_port_ipv4(6379)
             .await
             .expect("Failed to get master port")
+    }
+
+    /// Returns the underlying container reference.
+    pub fn container(&self) -> &ContainerAsync<GenericImage> {
+        &self.container
     }
 }
