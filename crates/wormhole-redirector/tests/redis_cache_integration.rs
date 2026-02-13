@@ -15,9 +15,11 @@ pub struct RedisTestContainer {
 impl RedisTestContainer {
     /// Starts a new Redis container with a random available port.
     pub async fn start() -> Self {
-        let redis = RedisMaster::new().await;
-        let host = redis.host().await;
-        let port = redis.port().await;
+        let redis = RedisMaster::new()
+            .await
+            .expect("Failed to start Redis master");
+        let host = redis.host().await.expect("Failed to get Redis host");
+        let port = redis.port().await.expect("Failed to get Redis port");
         let redis_url = format!("redis://{}:{}", host, port);
 
         // Wait a moment to ensure Redis is fully ready

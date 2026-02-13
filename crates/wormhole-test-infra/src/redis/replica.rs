@@ -1,3 +1,4 @@
+use crate::Result;
 use testcontainers::core::{IntoContainerPort, WaitFor};
 use testcontainers::runners::AsyncRunner;
 use testcontainers::{ContainerAsync, GenericImage, ImageExt};
@@ -7,7 +8,7 @@ pub struct RedisReplica {
 }
 
 impl RedisReplica {
-    pub async fn new(master_host: &str, master_port: u16) -> Self {
+    pub async fn new(master_host: &str, master_port: u16) -> Result<Self> {
         let replica = GenericImage::new("redis", "8.6.0")
             .with_exposed_port(6379_u16.tcp())
             .with_wait_for(WaitFor::message_on_stdout("Ready to accept connections"))
@@ -18,30 +19,20 @@ impl RedisReplica {
                 master_port.to_string(),
             ])
             .start()
-            .await
-            .expect("Failed to start Redis replica container");
-        Self { container: replica }
+            .await?;
+        Ok(Self { container: replica })
     }
 
-    pub async fn host(&self) -> String {
-        let host = self
-            .container
-            .get_host()
-            .await
-            .expect("Failed to get replica host")
-            .to_string();
-
-        match host.as_str() {
+    pub async fn host(&self) -> Result<String> {
+        let host = self.container.get_host().await?.to_string();
+        Ok(match host.as_str() {
             "localhost" => String::from("127.0.0.1"),
             _ => host,
-        }
+        })
     }
 
-    pub async fn port(&self) -> u16 {
-        self.container
-            .get_host_port_ipv4(6379)
-            .await
-            .expect("Failed to get replica port")
+    pub async fn port(&self) -> Result<u16> {
+        Ok(self.container.get_host_port_ipv4(6379).await?)
     }
 
     /// Returns the underlying container reference.
