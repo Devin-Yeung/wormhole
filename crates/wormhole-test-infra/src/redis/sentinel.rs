@@ -45,11 +45,7 @@ impl RedisSentinel {
     }
 
     pub async fn host(&self) -> Result<String> {
-        let host = self.container.get_host().await?.to_string();
-        Ok(match host.as_str() {
-            "localhost" => String::from("127.0.0.1"),
-            _ => host,
-        })
+        Ok(self.container.get_host().await?.to_string())
     }
 
     pub async fn port(&self) -> Result<u16> {
@@ -65,11 +61,10 @@ mod tests {
     #[tokio::test]
     async fn test_sentinel_setup() {
         let master = RedisMaster::new().await.unwrap();
-        let master_host = master.host().await.unwrap();
-        let master_port = master.port().await.unwrap();
+        let (host, port) = master.bridge_addr().await.unwrap();
 
         // Start sentinel
-        let _ = RedisSentinel::new(&master_host, master_port, "wormhole-master")
+        let _ = RedisSentinel::new(&host, port, "wormhole-master")
             .await
             .unwrap();
     }

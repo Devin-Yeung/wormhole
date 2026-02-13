@@ -19,10 +19,12 @@ impl RedisMaster {
 
     pub async fn host(&self) -> Result<String> {
         let host = self.container.get_host().await?.to_string();
-        Ok(match host.as_str() {
-            "localhost" => String::from("127.0.0.1"),
-            _ => host,
-        })
+        Ok(host)
+    }
+
+    pub async fn bridge_addr(&self) -> Result<(String, u16)> {
+        let ip = self.container.get_bridge_ip_address().await?.to_string();
+        Ok((ip, 6379))
     }
 
     pub async fn port(&self) -> Result<u16> {

@@ -13,10 +13,10 @@ impl RedisReplica {
             .with_exposed_port(6379_u16.tcp())
             .with_wait_for(WaitFor::message_on_stdout("Ready to accept connections"))
             .with_cmd(vec![
-                "redis-server".to_string(),
-                "--replicaof".to_string(),
-                master_host.to_string(),
-                master_port.to_string(),
+                "redis-server",
+                "--replicaof",
+                master_host,
+                &master_port.to_string(),
             ])
             .start()
             .await?;
@@ -25,10 +25,11 @@ impl RedisReplica {
 
     pub async fn host(&self) -> Result<String> {
         let host = self.container.get_host().await?.to_string();
-        Ok(match host.as_str() {
-            "localhost" => String::from("127.0.0.1"),
-            _ => host,
-        })
+        Ok(host)
+    }
+
+    pub async fn bridge_host(&self) -> Result<String> {
+        Ok(self.container.get_bridge_ip_address().await?.to_string())
     }
 
     pub async fn port(&self) -> Result<u16> {
