@@ -1,0 +1,10 @@
+[package]
+name = "wormhole-test-infra"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+tokio = { workspace = true, features = ["full"] }
+redis = { workspace = true }
+testcontainers = { version = "0.27.0", features = ["blocking"] }

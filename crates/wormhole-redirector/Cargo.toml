@@ -13,7 +13,7 @@ async-trait = { workspace = true }
 tokio = { workspace = true }
 
 # Redis
-redis = { version = "1.0.3", features = [
+redis = { workspace = true, features = [
   "tokio-comp",
   "connection-manager",
   "sentinel",
