@@ -13,7 +13,11 @@ async-trait = { workspace = true }
 tokio = { workspace = true }
 
 # Redis
-redis = { version = "0.29", features = ["tokio-comp", "connection-manager"] }
+redis = { version = "1.0.3", features = [
+  "tokio-comp",
+  "connection-manager",
+  "sentinel",
+] }
 
 # In-memory cache
 moka = { version = "0.12", features = ["future"] }
@@ -32,4 +36,4 @@ tracing = { workspace = true }
 
 [dev-dependencies]
 tokio = { workspace = true, features = ["full"] }
-testcontainers = { version = "0.23", features = ["blocking"] }
+testcontainers = { version = "0.27", features = ["blocking"] }
