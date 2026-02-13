@@ -17,8 +17,9 @@ redis = { workspace = true, features = [
   "tokio-comp",
   "connection-manager",
   "sentinel",
+  "json",
 ] }
-deadpool-redis = { version = "0.22.1", features = ["sentinel"] }
+deadpool-redis = { version = "0.22.1", features = ["sentinel", "json"] }
 
 # In-memory cache
 moka = { version = "0.12", features = ["future"] }
@@ -38,3 +39,4 @@ tracing = { workspace = true }
 [dev-dependencies]
 tokio = { workspace = true, features = ["full"] }
 wormhole-test-infra = { workspace = true }
+awaitility = "0.4.1"
