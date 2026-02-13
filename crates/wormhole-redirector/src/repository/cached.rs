@@ -30,7 +30,7 @@ impl<R: ReadRepository, C: UrlCache> CachedRepository<R, C> {
     ///
     /// # async fn example() -> Result<(), Box<dyn std::error::Error>> {
     /// let redis_client = redis::Client::open("redis://127.0.0.1:6379")?;
-    /// let redis_conn = redis_client.get_multiplexed_tokio_connection().await?;
+    /// let redis_conn = redis_client.get_multiplexed_async_connection().await?;
     ///
     /// let inner_repo = InMemoryRepository::new();
     /// let cache = RedisUrlCache::new(redis_conn);

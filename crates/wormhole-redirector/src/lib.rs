@@ -14,7 +14,7 @@
 //! # async fn example() -> Result<(), Box<dyn std::error::Error>> {
 //! // Create Redis connection
 //! let redis_client = redis::Client::open("redis://127.0.0.1:6379")?;
-//! let redis_conn = redis_client.get_multiplexed_tokio_connection().await?;
+//! let redis_conn = redis_client.get_multiplexed_async_connection().await?;
 //!
 //! // Create repository with Redis caching
 //! let inner_repo = InMemoryRepository::new();

@@ -8,10 +8,10 @@ pub struct RedisSentinel {
 
 impl RedisSentinel {
     pub async fn new(master_host: &str, master_port: u16, master_name: &str) -> Self {
-        let container = GenericImage::new("redis", "7.0")
+        let container = GenericImage::new("redis", "8.6.0")
             .with_exposed_port(26379_u16.tcp())
             .with_wait_for(WaitFor::message_on_stdout("Sentinel running"))
-            .with_cmd(vec!["redis-sentinel".to_string(), "--sentinel".to_string()])
+            .with_cmd(vec!["redis-sentinel", "--sentinel"])
             .start()
             .await
             .expect("Failed to start Redis sentinel container");
