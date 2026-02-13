@@ -1,5 +1,6 @@
 use async_trait::async_trait;
 use moka::future::Cache;
+use std::future::Future;
 use std::time::Duration;
 use tracing::{debug, trace};
 use wormhole_core::{Result, ShortCode, UrlCache, UrlRecord};
@@ -11,7 +12,8 @@ use wormhole_core::{Result, ShortCode, UrlCache, UrlRecord};
 /// in front of Redis.
 #[derive(Debug, Clone)]
 pub struct MokaUrlCache {
-    cache: Cache<String, UrlRecord>,
+    // Use Option<UrlRecord> to properly handle "not found" cases in single-flight
+    cache: Cache<String, Option<UrlRecord>>,
 }
 
 impl MokaUrlCache {
@@ -86,7 +88,7 @@ impl UrlCache for MokaUrlCache {
         match self.cache.get(&key).await {
             Some(record) => {
                 debug!(code = %code, "Cache hit in Moka");
-                Ok(Some(record))
+                Ok(record)
             }
             None => {
                 trace!(code = %code, "Cache miss in Moka");
@@ -99,7 +101,7 @@ impl UrlCache for MokaUrlCache {
         trace!(code = %code, "Storing URL record in Moka cache");
 
         let key = code.as_str().to_string();
-        self.cache.insert(key, record.clone()).await;
+        self.cache.insert(key, Some(record.clone())).await;
         debug!(code = %code, "Cached record in Moka");
         Ok(())
     }
@@ -111,6 +113,29 @@ impl UrlCache for MokaUrlCache {
         self.cache.invalidate(&key).await;
         debug!(code = %code, "Removed record from Moka cache (if present)");
         Ok(())
+    }
+
+    async fn get_or_compute<F, Fut>(&self, code: &ShortCode, fetch: F) -> Result<Option<UrlRecord>>
+    where
+        F: FnOnce(&ShortCode) -> Fut + Send,
+        Fut: Future<Output = Result<Option<UrlRecord>>> + Send,
+    {
+        trace!(code = %code, "Fetching URL record from Moka cache with single-flight");
+
+        let key = code.as_str().to_string();
+
+        // Moka's get_with provides single-flight semantics:
+        // concurrent requests for the same key will coalesce into a single fetch
+        let result = self
+            .cache
+            .get_with(key, async {
+                trace!(code = %code, "Cache miss, performing single-flight fetch");
+                fetch(code).await.ok().flatten()
+            })
+            .await;
+
+        debug!(code = %code, "Single-flight fetch completed");
+        Ok(result)
     }
 }
 
@@ -314,5 +339,82 @@ mod tests {
 
         assert_eq!(r1.original_url, r2.original_url);
         assert_eq!(r1.expire_at, r2.expire_at);
+    }
+
+    #[tokio::test]
+    async fn single_flight_prevents_concurrent_fetch() {
+        use std::sync::atomic::{AtomicUsize, Ordering};
+        use std::sync::Arc;
+
+        let cache = MokaUrlCache::new();
+        let fetch_count = Arc::new(AtomicUsize::new(0));
+
+        // Spawn 10 concurrent requests for the same key
+        let mut handles = vec![];
+        for _ in 0..10 {
+            let cache = cache.clone();
+            let c = code("abc123");
+            let count = fetch_count.clone();
+            handles.push(tokio::spawn(async move {
+                cache
+                    .get_or_compute(&c, |_code| async {
+                        // Simulate slow fetch
+                        tokio::time::sleep(Duration::from_millis(50)).await;
+                        count.fetch_add(1, Ordering::SeqCst);
+                        Ok(Some(test_record("https://example.com")))
+                    })
+                    .await
+            }));
+        }
+
+        // Wait for all to complete
+        for handle in handles {
+            let _ = handle.await.unwrap();
+        }
+
+        // The fetch should only have been called once due to single-flight
+        assert_eq!(
+            fetch_count.load(Ordering::SeqCst),
+            1,
+            "Single-flight should prevent concurrent fetches for the same key"
+        );
+    }
+
+    #[tokio::test]
+    async fn single_flight_different_keys_fetch_independently() {
+        use std::sync::atomic::{AtomicUsize, Ordering};
+        use std::sync::Arc;
+
+        let cache = MokaUrlCache::new();
+        let fetch_count = Arc::new(AtomicUsize::new(0));
+
+        // Spawn requests for different keys
+        let mut handles = vec![];
+        for i in 0..5 {
+            let cache = cache.clone();
+            let c = code(&format!("code{}", i));
+            let count = fetch_count.clone();
+            handles.push(tokio::spawn(async move {
+                cache
+                    .get_or_compute(&c, |_code| async {
+                        tokio::time::sleep(Duration::from_millis(10)).await;
+                        count.fetch_add(1, Ordering::SeqCst);
+                        Ok(Some(test_record(&format!("https://example{}", i))))
+                    })
+                    .await
+            }));
+        }
+
+        // Wait for all to complete
+        for handle in handles {
+            let _ = handle.await.unwrap();
+        }
+
+        // Each key should have been fetched independently
+        assert_eq!(
+            fetch_count.load(Ordering::SeqCst),
+            5,
+            "Different keys should be fetched independently"
+        );
     }
 }

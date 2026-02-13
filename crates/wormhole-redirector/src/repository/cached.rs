@@ -65,36 +65,19 @@ impl<R: ReadRepository, C: UrlCache> CachedRepository<R, C> {
 #[async_trait]
 impl<R: ReadRepository, C: UrlCache> ReadRepository for CachedRepository<R, C> {
     async fn get(&self, code: &ShortCode) -> Result<Option<UrlRecord>> {
-        trace!(code = %code, "Fetching URL record from cache");
+        trace!(code = %code, "Fetching URL record with cache");
 
-        // 1. Try cache first
-        match self.cache.get_url(code).await {
-            Ok(Some(record)) => {
-                debug!(code = %code, "Cache hit for short code");
-                return Ok(Some(record));
-            }
-            Ok(None) => {
-                trace!(code = %code, "Cache miss for short code");
-            }
-            Err(e) => {
-                warn!(code = %code, error = %e, "Cache error on get, falling back to inner repository");
-            }
-        }
-
-        // 2. On miss, call inner.get()
-        trace!(code = %code, "Fetching from inner repository");
-        let result = self.inner.get(code).await?;
-
-        // 3. Cache result if found
-        if let Some(ref record) = result {
-            if let Err(e) = self.cache.set_url(code, record).await {
-                warn!(code = %code, error = %e, "Failed to cache record");
-            } else {
-                debug!(code = %code, "Cached record from inner repository");
-            }
-        }
-
-        Ok(result)
+        // Use get_or_compute for single-flight semantics:
+        // concurrent requests for the same key will coalesce into a single fetch
+        self.cache
+            .get_or_compute(code, move |c| {
+                let code = c.clone();
+                async move {
+                    trace!(code = %code, "Cache miss, fetching from inner repository");
+                    self.inner.get(&code).await
+                }
+            })
+            .await
     }
 
     async fn exists(&self, code: &ShortCode) -> Result<bool> {

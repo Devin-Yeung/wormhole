@@ -1,4 +1,5 @@
 use async_trait::async_trait;
+use std::future::Future;
 use tracing::{debug, trace};
 use wormhole_core::{Result, ShortCode, UrlCache, UrlRecord};
 
@@ -67,6 +68,45 @@ impl<L1, L2> LayeredCache<L1, L2> {
     }
 }
 
+impl<L1, L2> LayeredCache<L1, L2>
+where
+    L1: UrlCache,
+    L2: UrlCache,
+{
+    /// Get URL record from cache, computing it if not present.
+    ///
+    /// This method delegates to L1's [`get_or_compute`](UrlCache::get_or_compute)
+    /// to take advantage of single-flight semantics. If L1 doesn't have the value,
+    /// it will try L2 before calling `fetch`.
+    ///
+    /// This is useful for preventing cache stampedes (thundering herd) when
+    /// concurrent requests all miss the cache simultaneously.
+    pub async fn get_or_compute<F, Fut>(
+        &self,
+        code: &ShortCode,
+        fetch: F,
+    ) -> Result<Option<UrlRecord>>
+    where
+        F: FnOnce(&ShortCode) -> Fut + Send,
+        Fut: Future<Output = Result<Option<UrlRecord>>> + Send,
+    {
+        trace!(code = %code, "Fetching URL record from layered cache with single-flight");
+
+        // Clone for move closure
+        let code = code.clone();
+        let l2 = &self.l2;
+
+        // Chain single-flight: L1.get_or_compute wraps L2.get_or_compute wraps fetch
+        // This ensures both layers' single-flight semantics are respected
+        self.l1
+            .get_or_compute(&code, move |c| {
+                let c = c.clone();
+                async move { l2.get_or_compute(&c, fetch).await }
+            })
+            .await
+    }
+}
+
 #[async_trait]
 impl<L1, L2> UrlCache for LayeredCache<L1, L2>
 where
@@ -129,6 +169,15 @@ where
         debug!(code = %code, "Removed from L2 cache");
 
         Ok(())
+    }
+
+    async fn get_or_compute<F, Fut>(&self, code: &ShortCode, fetch: F) -> Result<Option<UrlRecord>>
+    where
+        F: FnOnce(&ShortCode) -> Fut + Send,
+        Fut: Future<Output = Result<Option<UrlRecord>>> + Send,
+    {
+        // Delegate to the inherent method to share the implementation
+        self.get_or_compute(code, fetch).await
     }
 }
 
@@ -280,5 +329,98 @@ mod tests {
 
         inner_l1.set_url(&c, &record).await.unwrap();
         assert_eq!(inner_l1.get_url(&c).await.unwrap(), Some(record));
+    }
+
+    #[tokio::test]
+    async fn layered_cache_single_flight_uses_l1_semantics() {
+        use std::sync::atomic::{AtomicUsize, Ordering};
+        use std::sync::Arc;
+        use std::time::Duration;
+
+        let cache = create_test_cache();
+        let fetch_count = Arc::new(AtomicUsize::new(0));
+
+        // Spawn 10 concurrent requests for the same key
+        let mut handles = vec![];
+        for _ in 0..10 {
+            let cache = cache.clone();
+            let c = code("abc123");
+            let count = fetch_count.clone();
+            handles.push(tokio::spawn(async move {
+                cache
+                    .get_or_compute(&c, |_code| async {
+                        // Simulate slow fetch
+                        tokio::time::sleep(Duration::from_millis(50)).await;
+                        count.fetch_add(1, Ordering::SeqCst);
+                        Ok(Some(test_record("https://example.com")))
+                    })
+                    .await
+            }));
+        }
+
+        // Wait for all to complete
+        for handle in handles {
+            let _ = handle.await.unwrap();
+        }
+
+        // The fetch should only have been called once due to L1's single-flight
+        assert_eq!(
+            fetch_count.load(Ordering::SeqCst),
+            1,
+            "Layered cache should use L1's single-flight semantics"
+        );
+    }
+
+    #[tokio::test]
+    async fn layered_cache_single_flight_skips_l2_when_cached() {
+        use std::sync::atomic::{AtomicUsize, Ordering};
+        use std::sync::Arc;
+        use std::time::Duration;
+
+        let cache = create_test_cache();
+        let fetch_count = Arc::new(AtomicUsize::new(0));
+        let c = code("abc123");
+        let record = test_record("https://example.com");
+
+        // Pre-populate L2
+        cache.l2.set_url(&c, &record).await.unwrap();
+
+        // Spawn concurrent requests
+        let mut handles = vec![];
+        for _ in 0..5 {
+            let cache = cache.clone();
+            let c = code("abc123");
+            let count = fetch_count.clone();
+            handles.push(tokio::spawn(async move {
+                cache
+                    .get_or_compute(&c, |_code| async {
+                        // This fetch should not be called since L2 has the value
+                        tokio::time::sleep(Duration::from_millis(10)).await;
+                        count.fetch_add(1, Ordering::SeqCst);
+                        Ok(Some(test_record("https://fetched.com")))
+                    })
+                    .await
+            }));
+        }
+
+        // Wait for all to complete
+        for handle in handles {
+            let result = handle.await.unwrap().unwrap();
+            // Should get the value from L2, not from fetch
+            assert_eq!(result.unwrap().original_url, "https://example.com");
+        }
+
+        // Fetch should not have been called since L2 had the value
+        assert_eq!(
+            fetch_count.load(Ordering::SeqCst),
+            0,
+            "Fetch should not be called when L2 has the value"
+        );
+
+        // L1 should now be backfilled
+        assert_eq!(
+            cache.l1.get_url(&c).await.unwrap().unwrap().original_url,
+            "https://example.com"
+        );
     }
 }
