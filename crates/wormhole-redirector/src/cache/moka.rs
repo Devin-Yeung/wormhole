@@ -3,6 +3,7 @@ use moka::future::Cache;
 use std::future::Future;
 use std::time::Duration;
 use tracing::{debug, trace};
+use typed_builder::TypedBuilder;
 use wormhole_core::{Result, ShortCode, UrlCache, UrlRecord};
 
 /// An in-memory cache implementation using Moka.
@@ -68,8 +69,8 @@ impl MokaUrlCache {
     }
 
     /// Returns a builder for creating a custom cache configuration.
-    pub fn builder() -> CacheBuilder {
-        CacheBuilder::new()
+    pub fn builder() -> CacheConfigBuilder {
+        CacheConfig::builder()
     }
 }
 
@@ -139,51 +140,33 @@ impl UrlCache for MokaUrlCache {
     }
 }
 
-/// A builder for creating a MokaUrlCache with custom configuration.
-#[derive(Debug, Default)]
-pub struct CacheBuilder {
+/// Configuration for creating a MokaUrlCache with custom settings.
+#[derive(Debug, TypedBuilder, Default)]
+pub struct CacheConfig {
+    /// Maximum number of entries the cache can hold.
+    #[builder(default, setter(strip_option))]
     max_capacity: Option<u64>,
+    /// Time-to-live for cache entries.
+    #[builder(default, setter(strip_option))]
     ttl: Option<Duration>,
+    /// Time-to-idle for cache entries.
+    #[builder(default, setter(strip_option))]
     tti: Option<Duration>,
 }
 
-impl CacheBuilder {
-    /// Creates a new cache builder.
-    pub fn new() -> Self {
-        Self::default()
-    }
-
-    /// Sets the maximum capacity of the cache.
-    pub fn max_capacity(mut self, capacity: u64) -> Self {
-        self.max_capacity = Some(capacity);
-        self
-    }
-
-    /// Sets the time-to-live for cache entries.
-    pub fn ttl(mut self, ttl: Duration) -> Self {
-        self.ttl = Some(ttl);
-        self
-    }
-
-    /// Sets the time-to-idle for cache entries.
-    pub fn tti(mut self, tti: Duration) -> Self {
-        self.tti = Some(tti);
-        self
-    }
-
-    /// Builds the MokaUrlCache with the configured settings.
-    pub fn build(self) -> MokaUrlCache {
+impl From<CacheConfig> for MokaUrlCache {
+    fn from(config: CacheConfig) -> Self {
         let mut builder = Cache::builder();
 
-        if let Some(capacity) = self.max_capacity {
+        if let Some(capacity) = config.max_capacity {
             builder = builder.max_capacity(capacity);
         }
 
-        if let Some(ttl) = self.ttl {
+        if let Some(ttl) = config.ttl {
             builder = builder.time_to_live(ttl);
         }
 
-        if let Some(tti) = self.tti {
+        if let Some(tti) = config.tti {
             builder = builder.time_to_idle(tti);
         }
 
@@ -277,11 +260,12 @@ mod tests {
 
     #[tokio::test]
     async fn cache_builder_pattern() {
-        let cache = MokaUrlCache::builder()
+        let cache: MokaUrlCache = MokaUrlCache::builder()
             .max_capacity(1000)
             .ttl(Duration::from_secs(60))
             .tti(Duration::from_secs(30))
-            .build();
+            .build()
+            .into();
 
         let c = code("abc123");
         let record = test_record("https://example.com");

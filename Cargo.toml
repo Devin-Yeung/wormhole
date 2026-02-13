@@ -40,3 +40,6 @@ jiff = { version = "0.2.19", features = ["serde"] }
 
 # Async trait
 async-trait = "0.1.89"
+
+# Utils
+typed-builder = { version = "0.23.2" }
