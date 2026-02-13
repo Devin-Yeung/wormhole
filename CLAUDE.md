@@ -53,41 +53,57 @@ cargo deny check
 
 ### Workspace Structure
 
-The project is organized as a Cargo workspace with four crates:
+The project is organized as a Cargo workspace with five crates:
 
-- **`wormhole-gateway`**: HTTP API server (Axum) - the entry point for clients
-- **`wormhole-shortener`**: Core domain logic with trait-based abstractions
+- **`wormhole-core`**: Core types and traits shared across the workspace
+- **`wormhole-shortener`**: Service implementation and code generators
 - **`wormhole-proto-schema`**: gRPC protocol buffer definitions and generated code
+- **`wormhole-gateway`**: HTTP API server (Axum) - the entry point for clients
 - **`wormhole-redirector`**: Redirect handling logic (placeholder)
 
-### Key Abstractions (in `wormhole-shortener`)
+### Crate Dependencies
 
-The shortener crate defines three core traits:
+- `wormhole-core` has no internal dependencies and provides the foundation
+- `wormhole-shortener` depends on `wormhole-core` and `wormhole-proto-schema`
+- `wormhole-gateway` depends on `wormhole-shortener` and `wormhole-proto-schema`
 
-1. **`Shortener`** (`shortener.rs`): High-level service trait for URL shortening operations
+### Core Types and Traits (in `wormhole-core`)
+
+This crate defines the shared domain model:
+
+1. **`Shortener`** (`shortener.rs`): High-level service trait
    - `shorten(params: ShortenParams) -> Result<ShortCode>`
    - `resolve(code) -> Result<Option<UrlRecord>>`
    - `delete(code) -> Result<bool>`
 
-2. **`Repository`** (`repository.rs`): Storage abstraction for URL records
-   - Implemented by `InMemoryRepository` using `DashMap` for concurrent access
-   - Handles expiration logic transparently
+2. **`Repository`** / **`ReadRepository`** (`repository.rs`): Storage abstraction
+   - `Repository` extends `ReadRepository` with write operations
+   - `InMemoryRepository` (in `repository/memory.rs`) uses `DashMap` for concurrent access
 
-3. **`Generator`** (`generator.rs`): Short code generation strategy
-   - Implemented by `UniqueGenerator` (sequential with prefix)
-   - Generators are pure functions that don't interact with storage
+3. **`UrlCache`** (`cache.rs`): Caching abstraction for URL records
+   - `get_or_compute()` with single-flight support for request coalescing
+   - Used by the redirector to cache lookups
 
 4. **`ShortCode`** (`shortcode.rs`): Validated short code type
    - Enforces 3-32 character length
    - Only allows alphanumeric, hyphens, and underscores
    - Use `ShortCode::new()` for validation, `new_unchecked()` for trusted input
 
-### Service Implementation
+5. **`UrlRecord`** (`repository.rs`): Stored URL record with expiration
 
-`ShortenerService<R, G>` (`service.rs`) is the concrete implementation that composes a `Repository` and `Generator`. It handles:
-- URL validation (scheme must be http/https)
-- Custom alias conflict detection
-- Expiration policy conversion (using `jiff::Timestamp`)
+6. **`Error`** (`error.rs`): Domain errors including `AliasConflict`, `InvalidUrl`
+
+### Service Implementation (in `wormhole-shortener`)
+
+1. **`ShortenerService<R, G>`** (`service.rs`): Concrete `Shortener` implementation
+   - Composes a `Repository` and `Generator`
+   - Handles URL validation (scheme must be http/https)
+   - Custom alias conflict detection
+   - Expiration policy conversion (using `jiff::Timestamp`)
+
+2. **`Generator`** (`generator.rs`): Short code generation trait
+   - Implemented by `UniqueGenerator` (`generator/seq.rs`) - sequential with prefix
+   - Generators are pure functions that don't interact with storage
 
 ### gRPC Integration
 
