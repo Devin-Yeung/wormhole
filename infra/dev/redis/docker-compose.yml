@@ -6,72 +6,29 @@ services:
     command: redis-server
     ports:
       - "6379:6379"
-    networks:
-      - wormhole-redis
 
   # --- Redis Slaves ---
-  redis-slave-1:
+  redis-slave:
     image: redis:7.0
-    container_name: redis-slave-1
+    container_name: redis-slave
     command: redis-server --replicaof redis-master 6379
+    ports:
+      - "6380:6379"
     depends_on:
       - redis-master
-    networks:
-      - wormhole-redis
-
-  redis-slave-2:
-    image: redis:7.0
-    container_name: redis-slave-2
-    command: redis-server --replicaof redis-master 6379
-    depends_on:
-      - redis-master
-    networks:
-      - wormhole-redis
 
   # --- Redis Sentinels ---
-  redis-sentinel-1:
+  redis-sentinel:
     image: redis:7.0
-    container_name: redis-sentinel-1
+    container_name: redis-sentinel
     command: >
       sh -c "cp /etc/redis/sentinel-template.conf /data/sentinel.conf && 
              chmod 777 /data/sentinel.conf && 
              redis-sentinel /data/sentinel.conf"
+    ports:
+      - "26379:26379"
     volumes:
       - ./sentinel/sentinel-template.conf:/etc/redis/sentinel-template.conf:ro
     depends_on:
       - redis-master
-      - redis-slave-1
-      - redis-slave-2
-    networks:
-      - wormhole-redis
-
-  redis-sentinel-2:
-    image: redis:7.0
-    container_name: redis-sentinel-2
-    command: >
-      sh -c "cp /etc/redis/sentinel-template.conf /data/sentinel.conf && 
-             chmod 777 /data/sentinel.conf && 
-             redis-sentinel /data/sentinel.conf"
-    volumes:
-      - ./sentinel/sentinel-template.conf:/etc/redis/sentinel-template.conf:ro
-    depends_on:
-      - redis-master
-    networks:
-      wormhole-redis:
-
-  redis-sentinel-3:
-    image: redis:7.0
-    container_name: redis-sentinel-3
-    command: >
-      sh -c "cp /etc/redis/sentinel-template.conf /data/sentinel.conf && 
-             chmod 777 /data/sentinel.conf && 
-             redis-sentinel /data/sentinel.conf"
-    volumes:
-      - ./sentinel/sentinel-template.conf:/etc/redis/sentinel-template.conf:ro
-    depends_on:
-      - redis-master
-    networks:
-      - wormhole-redis
-
-networks:
-  wormhole-redis:
+      - redis-slave
