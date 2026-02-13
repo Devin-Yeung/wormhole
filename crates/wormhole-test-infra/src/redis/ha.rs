@@ -2,6 +2,7 @@ use crate::redis::{RedisHAConfig, RedisMaster, RedisReplica, RedisSentinel};
 use crate::Result;
 
 pub struct RedisHA {
+    config: RedisHAConfig,
     master: RedisMaster,
     replicas: Vec<RedisReplica>,
     sentinel: Vec<RedisSentinel>,
@@ -28,10 +29,15 @@ impl RedisHA {
         }
 
         Ok(Self {
+            config,
             master,
             replicas,
             sentinel: sentinels,
         })
+    }
+
+    pub fn name(&self) -> &str {
+        &self.config.service_name
     }
 
     pub async fn replica_addresses(&self) -> Vec<(String, u16)> {
