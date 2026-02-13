@@ -41,15 +41,16 @@ jobs:
       - uses: actions/checkout@v6
         with:
           submodules: true
-      - name: Install ${{ matrix.toolchain }}
-        uses: dtolnay/rust-toolchain@master
-        with:
-          toolchain: ${{ matrix.toolchain }}
-          components: clippy
+
+      - name: Install Nix
+        uses: DeterminateSystems/determinate-nix-action@main
+
+      - name: Install devenv.sh
+        run: nix profile add 'nixpkgs#devenv'
+
       - name: cargo clippy
-        uses: actions-rs/clippy-check@v1
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+        shell: devenv shell bash -- -e {0}
+        run: cargo clippy --all-features --all-targets
   doc:
     runs-on: ubuntu-latest
     name: nightly / doc
@@ -57,15 +58,22 @@ jobs:
       - uses: actions/checkout@v6
         with:
           submodules: true
-      - name: Install nightly
-        uses: dtolnay/rust-toolchain@nightly
+
+      - name: Install Nix
+        uses: DeterminateSystems/determinate-nix-action@main
+
+      - name: Install devenv.sh
+        run: nix profile add 'nixpkgs#devenv'
+
       - name: cargo doc
+        shell: devenv shell bash -- -e {0}
         run: cargo doc --no-deps --all-features
         env:
           RUSTDOCFLAGS: --cfg docsrs
+
   required:
     runs-on: ubuntu-latest
-    name: ubuntu / ${{ matrix.toolchain }} / test
+    name: ubuntu / ${{ matrix.toolchain }} / required
     strategy:
       matrix:
         toolchain: [stable]
@@ -104,10 +112,18 @@ jobs:
       - uses: actions/checkout@v6
         with:
           submodules: true
-      - name: Install stable
-        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install Nix
+        uses: DeterminateSystems/determinate-nix-action@main
+
+      - name: Install devenv.sh
+        run: nix profile add 'nixpkgs#devenv'
+
       - name: cargo generate-lockfile
         if: hashFiles('Cargo.lock') == ''
+        shell: devenv shell bash -- -e {0}
         run: cargo generate-lockfile
+
       - name: cargo test
+        shell: devenv shell bash -- -e {0}
         run: cargo test --locked --all-features --all-targets
