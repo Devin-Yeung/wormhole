@@ -3,11 +3,45 @@ use thiserror::Error;
 /// Type alias for the result type used in the URL shortener service.
 pub type Result<T> = std::result::Result<T, Error>;
 
-/// Custom error type for the URL shortener service.
+// Centralized error type for the URL shortener service, encompassing all possible error cases
 #[derive(Debug, Error)]
 pub enum Error {
+    #[error("cache error: {0}")]
+    Cache(#[from] CacheError),
     #[error("storage error: {0}")]
-    Storage(#[source] Box<dyn std::error::Error + Send + Sync>),
+    Storage(#[from] StorageError),
+    #[error("shortener error: {0}")]
+    Shortener(#[from] ShortenerError),
+}
+
+#[derive(Debug, Error)]
+pub enum CacheError {
+    #[error(transparent)]
+    Other(Box<dyn std::error::Error + Send + Sync>),
+}
+
+impl From<Box<dyn std::error::Error + Send + Sync>> for CacheError {
+    fn from(err: Box<dyn std::error::Error + Send + Sync>) -> Self {
+        Self::Other(err)
+    }
+}
+
+#[derive(Debug, Error)]
+pub enum StorageError {
+    #[error("alias already exists: {0}")]
+    Conflict(String),
+    #[error(transparent)]
+    Other(Box<dyn std::error::Error + Send + Sync>),
+}
+
+impl From<Box<dyn std::error::Error + Send + Sync>> for StorageError {
+    fn from(err: Box<dyn std::error::Error + Send + Sync>) -> Self {
+        Self::Other(err)
+    }
+}
+
+#[derive(Debug, Error)]
+pub enum ShortenerError {
     #[error("alias already exists: {0}")]
     AliasConflict(String),
     #[error("invalid url: {0}")]

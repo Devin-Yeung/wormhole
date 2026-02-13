@@ -1,4 +1,4 @@
-use crate::error::{Error, Result};
+use crate::error::{Error, Result, ShortenerError};
 use serde::{Deserialize, Serialize};
 use std::fmt;
 
@@ -44,22 +44,22 @@ impl ShortCode {
 
     fn validate(code: &str) -> Result<()> {
         if code.len() < MIN_LENGTH || code.len() > MAX_LENGTH {
-            return Err(Error::InvalidShortCode(format!(
+            return Err(Error::Shortener(ShortenerError::InvalidShortCode(format!(
                 "length must be between {} and {}, got {}",
                 MIN_LENGTH,
                 MAX_LENGTH,
                 code.len()
-            )));
+            ))));
         }
 
         if !code
             .chars()
             .all(|c| c.is_ascii_alphanumeric() || c == '-' || c == '_')
         {
-            return Err(Error::InvalidShortCode(format!(
+            return Err(Error::Shortener(ShortenerError::InvalidShortCode(format!(
                 "must contain only alphanumeric characters, hyphens, or underscores: '{}'",
                 code
-            )));
+            ))));
         }
 
         Ok(())

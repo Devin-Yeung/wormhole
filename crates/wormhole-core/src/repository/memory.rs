@@ -1,5 +1,5 @@
-use crate::error::{Error, Result};
-use crate::repository::{ReadRepository, Repository, UrlRecord};
+use crate::error::StorageError;
+use crate::repository::{ReadRepository, Repository, Result, UrlRecord};
 use crate::shortcode::ShortCode;
 use async_trait::async_trait;
 use dashmap::DashMap;
@@ -106,7 +106,7 @@ impl Repository for InMemoryRepository {
         let existing = self.storage.get(&key);
         if let Some(ref e) = existing {
             if !e.is_expired() {
-                return Err(Error::AliasConflict(code.to_string()));
+                return Err(StorageError::Conflict(code.to_string()));
             }
             // Expired entry — drop the read guard, then remove & re-insert below.
             drop(existing);
@@ -171,7 +171,7 @@ mod tests {
             .await
             .unwrap_err();
 
-        assert!(matches!(err, Error::AliasConflict(_)));
+        assert!(matches!(err, StorageError::Conflict(_)));
     }
 
     #[tokio::test]

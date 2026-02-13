@@ -1,7 +1,10 @@
 use async_trait::async_trait;
 use std::future::Future;
 use tracing::{debug, trace};
-use wormhole_core::{Result, ShortCode, UrlCache, UrlRecord};
+use wormhole_core::{CacheError, ShortCode, UrlCache, UrlRecord};
+
+/// Type alias for cache results.
+pub type Result<T> = std::result::Result<T, CacheError>;
 
 /// A multi-layer cache that composes two cache implementations.
 ///

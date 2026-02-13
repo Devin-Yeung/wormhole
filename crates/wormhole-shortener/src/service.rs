@@ -3,7 +3,7 @@ use async_trait::async_trait;
 use jiff::Timestamp;
 use std::sync::Arc;
 use wormhole_core::{
-    Error, ExpirationPolicy, Repository, Result, ShortCode, ShortenParams, Shortener, UrlRecord,
+    ExpirationPolicy, Repository, ShortCode, ShortenParams, Shortener, ShortenerError, UrlRecord,
 };
 
 /// A concrete implementation of the `Shortener` trait.
@@ -31,16 +31,18 @@ impl<R: Repository, G: Generator> ShortenerService<R, G> {
     }
 
     /// Validates that the URL has a valid format (has a scheme and host).
-    fn validate_url(url: &str) -> Result<()> {
+    fn validate_url(url: &str) -> Result<(), ShortenerError> {
         if url.is_empty() {
-            return Err(Error::InvalidUrl("URL cannot be empty".to_string()));
+            return Err(ShortenerError::InvalidUrl(
+                "URL cannot be empty".to_string(),
+            ));
         }
 
         // Basic validation: check for scheme and host presence
         // A valid URL should have "://" and something after it
         let parts: Vec<&str> = url.split("://").collect();
         if parts.len() < 2 || parts[0].is_empty() || parts[1].is_empty() {
-            return Err(Error::InvalidUrl(format!(
+            return Err(ShortenerError::InvalidUrl(format!(
                 "URL must have a valid scheme and host: {}",
                 url
             )));
@@ -49,7 +51,7 @@ impl<R: Repository, G: Generator> ShortenerService<R, G> {
         // Check for valid scheme (http or https)
         let scheme = parts[0].to_lowercase();
         if scheme != "http" && scheme != "https" {
-            return Err(Error::InvalidUrl(format!(
+            return Err(ShortenerError::InvalidUrl(format!(
                 "URL scheme must be http or https: {}",
                 scheme
             )));
@@ -67,7 +69,7 @@ impl<R: Repository, G: Generator> ShortenerService<R, G> {
 
 #[async_trait]
 impl<R: Repository, G: Generator> Shortener for ShortenerService<R, G> {
-    async fn shorten(&self, params: ShortenParams) -> Result<ShortCode> {
+    async fn shorten(&self, params: ShortenParams) -> Result<ShortCode, ShortenerError> {
         // Validate the URL
         Self::validate_url(&params.original_url)?;
 
@@ -75,8 +77,13 @@ impl<R: Repository, G: Generator> Shortener for ShortenerService<R, G> {
         let short_code = match params.custom_alias {
             Some(code) => {
                 // Check for alias conflict
-                if self.repository.exists(&code).await? {
-                    return Err(Error::AliasConflict(code.to_string()));
+                if self
+                    .repository
+                    .exists(&code)
+                    .await
+                    .map_err(storage_to_shortener_error)?
+                {
+                    return Err(ShortenerError::AliasConflict(code.to_string()));
                 }
                 code
             }
@@ -89,8 +96,9 @@ impl<R: Repository, G: Generator> Shortener for ShortenerService<R, G> {
             ExpirationPolicy::Never => None,
             ExpirationPolicy::AfterDuration(duration) => {
                 let future = Timestamp::now()
-                    + jiff::SignedDuration::try_from(duration)
-                        .map_err(|e| Error::Storage(format!("Invalid duration: {}", e).into()))?;
+                    + jiff::SignedDuration::try_from(duration).map_err(|e| {
+                        ShortenerError::InvalidUrl(format!("Invalid duration: {}", e))
+                    })?;
                 Some(future)
             }
             ExpirationPolicy::AtTimestamp(timestamp) => Some(timestamp),
@@ -103,17 +111,34 @@ impl<R: Repository, G: Generator> Shortener for ShortenerService<R, G> {
         };
 
         // Store in repository
-        self.repository.insert(&short_code, record).await?;
+        self.repository
+            .insert(&short_code, record)
+            .await
+            .map_err(storage_to_shortener_error)?;
 
         Ok(short_code)
     }
 
-    async fn resolve(&self, code: &ShortCode) -> Result<Option<UrlRecord>> {
-        self.repository.get(code).await
+    async fn resolve(&self, code: &ShortCode) -> Result<Option<UrlRecord>, ShortenerError> {
+        self.repository
+            .get(code)
+            .await
+            .map_err(storage_to_shortener_error)
     }
 
-    async fn delete(&self, code: &ShortCode) -> Result<bool> {
-        self.repository.delete(code).await
+    async fn delete(&self, code: &ShortCode) -> Result<bool, ShortenerError> {
+        self.repository
+            .delete(code)
+            .await
+            .map_err(storage_to_shortener_error)
+    }
+}
+
+/// Converts a StorageError to a ShortenerError.
+fn storage_to_shortener_error(e: wormhole_core::StorageError) -> ShortenerError {
+    match e {
+        wormhole_core::StorageError::Conflict(code) => ShortenerError::AliasConflict(code),
+        wormhole_core::StorageError::Other(e) => ShortenerError::InvalidUrl(e.to_string()),
     }
 }
 
@@ -175,7 +200,7 @@ mod tests {
 
         service.shorten(params1).await.unwrap();
         let err = service.shorten(params2).await.unwrap_err();
-        assert!(matches!(err, Error::AliasConflict(_)));
+        assert!(matches!(err, ShortenerError::AliasConflict(_)));
     }
 
     #[tokio::test]
@@ -189,7 +214,7 @@ mod tests {
         };
 
         let err = service.shorten(params).await.unwrap_err();
-        assert!(matches!(err, Error::InvalidUrl(_)));
+        assert!(matches!(err, ShortenerError::InvalidUrl(_)));
     }
 
     #[tokio::test]

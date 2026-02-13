@@ -1,10 +1,11 @@
 pub mod memory;
 
-use crate::error::Result;
 use crate::shortcode::ShortCode;
 use async_trait::async_trait;
 use jiff::Timestamp;
 use serde::{Deserialize, Serialize};
+
+type Result<T> = std::result::Result<T, crate::error::StorageError>;
 
 /// A stored URL record in the repository.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]

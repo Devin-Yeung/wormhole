@@ -1,7 +1,10 @@
 use async_trait::async_trait;
 use deadpool_redis::redis::AsyncCommands;
 use tracing::{debug, trace, warn};
-use wormhole_core::{Result, ShortCode, UrlCache, UrlRecord};
+use wormhole_core::{CacheError, ShortCode, UrlCache, UrlRecord};
+
+/// Type alias for cache results.
+pub type Result<T> = std::result::Result<T, CacheError>;
 
 /// A Redis Sentinel-based high-availability implementation of [`UrlCache`].
 ///
@@ -96,7 +99,7 @@ impl UrlCache for RedisHAUrlCache {
             }
             Err(e) => {
                 warn!(code = %code, error = %e, "Redis error on get from replica");
-                Err(wormhole_core::Error::Storage(Box::new(e)))
+                Err(CacheError::Other(e.into()))
             }
         }
     }
@@ -109,7 +112,7 @@ impl UrlCache for RedisHAUrlCache {
             Ok(json) => json,
             Err(e) => {
                 warn!(code = %code, error = %e, "Failed to serialize record for caching");
-                return Err(wormhole_core::Error::Storage(Box::new(e)));
+                return Err(CacheError::Other(e.into()));
             }
         };
 
@@ -117,7 +120,7 @@ impl UrlCache for RedisHAUrlCache {
             Ok(conn) => conn,
             Err(e) => {
                 warn!(code = %code, error = %e, "Failed to get connection from master pool");
-                return Err(wormhole_core::Error::Storage(Box::new(e)));
+                return Err(CacheError::Other(e.into()));
             }
         };
 
@@ -128,7 +131,7 @@ impl UrlCache for RedisHAUrlCache {
             }
             Err(e) => {
                 warn!(code = %code, error = %e, "Failed to cache record in Redis HA");
-                Err(wormhole_core::Error::Storage(Box::new(e)))
+                Err(CacheError::Other(e.into()))
             }
         }
     }
@@ -141,7 +144,7 @@ impl UrlCache for RedisHAUrlCache {
             Ok(conn) => conn,
             Err(e) => {
                 warn!(code = %code, error = %e, "Failed to get connection from master pool");
-                return Err(wormhole_core::Error::Storage(Box::new(e)));
+                return Err(CacheError::Other(e.into()));
             }
         };
 
@@ -152,7 +155,7 @@ impl UrlCache for RedisHAUrlCache {
             }
             Err(e) => {
                 warn!(code = %code, error = %e, "Failed to remove record from Redis HA cache");
-                Err(wormhole_core::Error::Storage(Box::new(e)))
+                Err(CacheError::Other(e.into()))
             }
         }
     }

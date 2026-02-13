@@ -1,8 +1,9 @@
-use crate::error::Result;
 use crate::repository::UrlRecord;
 use crate::shortcode::ShortCode;
 use async_trait::async_trait;
 use std::future::Future;
+
+type Result<T> = std::result::Result<T, crate::error::CacheError>;
 
 /// A cache for URL records.
 ///

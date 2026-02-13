@@ -1,6 +1,9 @@
 use async_trait::async_trait;
 use tracing::{debug, trace, warn};
-use wormhole_core::{ReadRepository, Result, ShortCode, UrlCache, UrlRecord};
+use wormhole_core::{ReadRepository, ShortCode, StorageError, UrlCache, UrlRecord};
+
+/// Type alias for repository results.
+pub type Result<T> = std::result::Result<T, StorageError>;
 
 /// A read-only repository decorator that adds caching.
 ///
@@ -58,7 +61,10 @@ impl<R: ReadRepository, C: UrlCache> CachedRepository<R, C> {
     /// and you want to ensure the next read fetches fresh data.
     pub async fn invalidate(&self, code: &ShortCode) -> Result<()> {
         trace!(code = %code, "Invalidating cache entry");
-        self.cache.del(code).await
+        self.cache
+            .del(code)
+            .await
+            .map_err(|e| StorageError::Other(e.into()))
     }
 }
 
@@ -74,10 +80,14 @@ impl<R: ReadRepository, C: UrlCache> ReadRepository for CachedRepository<R, C> {
                 let code = c.clone();
                 async move {
                     trace!(code = %code, "Cache miss, fetching from inner repository");
-                    self.inner.get(&code).await
+                    self.inner
+                        .get(&code)
+                        .await
+                        .map_err(|e| wormhole_core::CacheError::Other(e.into()))
                 }
             })
             .await
+            .map_err(|e| StorageError::Other(e.into()))
     }
 
     async fn exists(&self, code: &ShortCode) -> Result<bool> {

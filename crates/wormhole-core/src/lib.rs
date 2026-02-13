@@ -10,7 +10,7 @@ pub mod shortcode;
 pub mod shortener;
 
 pub use cache::UrlCache;
-pub use error::{Error, Result};
+pub use error::{CacheError, Error, Result, ShortenerError, StorageError};
 pub use repository::{memory::InMemoryRepository, ReadRepository, Repository, UrlRecord};
 pub use shortcode::ShortCode;
 pub use shortener::{ExpirationPolicy, ShortenParams, Shortener};

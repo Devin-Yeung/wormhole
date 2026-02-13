@@ -1,7 +1,10 @@
 use async_trait::async_trait;
 use redis::AsyncCommands;
 use tracing::{debug, trace, warn};
-use wormhole_core::{Result, ShortCode, UrlCache, UrlRecord};
+use wormhole_core::{CacheError, ShortCode, UrlCache, UrlRecord};
+
+/// Type alias for cache results.
+pub type Result<T> = std::result::Result<T, CacheError>;
 
 /// A Redis-based implementation of [`UrlCache`].
 ///
@@ -72,7 +75,7 @@ impl UrlCache for RedisUrlCache {
             }
             Err(e) => {
                 warn!(code = %code, error = %e, "Redis error on get");
-                Err(wormhole_core::Error::Storage(Box::new(e)))
+                Err(CacheError::Other(e.into()))
             }
         }
     }
@@ -85,7 +88,7 @@ impl UrlCache for RedisUrlCache {
             Ok(json) => json,
             Err(e) => {
                 warn!(code = %code, error = %e, "Failed to serialize record for caching");
-                return Err(wormhole_core::Error::Storage(Box::new(e)));
+                return Err(CacheError::Other(e.into()));
             }
         };
 
@@ -97,7 +100,7 @@ impl UrlCache for RedisUrlCache {
             }
             Err(e) => {
                 warn!(code = %code, error = %e, "Failed to cache record in Redis");
-                Err(wormhole_core::Error::Storage(Box::new(e)))
+                Err(CacheError::Other(e.into()))
             }
         }
     }
@@ -114,7 +117,7 @@ impl UrlCache for RedisUrlCache {
             }
             Err(e) => {
                 warn!(code = %code, error = %e, "Failed to remove record from Redis cache");
-                Err(wormhole_core::Error::Storage(Box::new(e)))
+                Err(CacheError::Other(e.into()))
             }
         }
     }

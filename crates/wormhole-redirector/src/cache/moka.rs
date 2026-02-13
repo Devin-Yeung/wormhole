@@ -4,7 +4,10 @@ use std::future::Future;
 use std::time::Duration;
 use tracing::{debug, trace};
 use typed_builder::TypedBuilder;
-use wormhole_core::{Result, ShortCode, UrlCache, UrlRecord};
+use wormhole_core::{CacheError, ShortCode, UrlCache, UrlRecord};
+
+/// Type alias for cache results.
+pub type Result<T> = std::result::Result<T, CacheError>;
 
 /// An in-memory cache implementation using Moka.
 ///

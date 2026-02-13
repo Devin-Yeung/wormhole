@@ -1,9 +1,10 @@
-use crate::error::Result;
 use crate::repository::UrlRecord;
 use crate::shortcode::ShortCode;
 use async_trait::async_trait;
 use jiff::Timestamp;
 use std::time::Duration;
+
+type Result<T> = std::result::Result<T, crate::error::ShortenerError>;
 
 /// Expiration policy for a shortened URL.
 #[derive(Debug, Clone)]
