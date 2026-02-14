@@ -7,16 +7,9 @@ license.workspace = true
 [dependencies]
 # Workspace members
 wormhole-core = { workspace = true }
-wormhole-proto-schema = { workspace = true }
 wormhole-storage = { workspace = true }
 # Async
 async-trait = { workspace = true }
 tokio = { workspace = true }
 # Time
 jiff = { workspace = true }
-# gRPC
-tonic = { workspace = true }
-prost = { workspace = true }
-prost-types = { workspace = true }
-# Tracing
-tracing = { workspace = true }

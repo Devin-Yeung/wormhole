@@ -8,11 +8,3 @@ tokio = { workspace = true }
 # tracing
 tracing = { workspace = true }
 tracing-subscriber = { workspace = true }
-# Serialization
-serde = { workspace = true }
-# HTTP
-axum = "0.8.8"
-# gRPC
-wormhole-proto-schema = { workspace = true }
-# URL Shortener
-wormhole-shortener = { workspace = true }
