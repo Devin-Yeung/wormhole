@@ -43,4 +43,5 @@ parking_lot = "0.12.5"
 [dev-dependencies]
 tokio = { workspace = true, features = ["full"] }
 wormhole-test-infra = { workspace = true }
+wormhole-storage = { workspace = true }
 awaitility = "0.4.1"

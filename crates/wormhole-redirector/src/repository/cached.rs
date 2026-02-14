@@ -29,7 +29,7 @@ impl<R: ReadRepository, C: UrlCache> CachedRepository<R, C> {
     ///
     /// ```rust,no_run
     /// use wormhole_redirector::{CachedRepository, RedisUrlCache};
-    /// use wormhole_core::InMemoryRepository;
+    /// use wormhole_storage::InMemoryRepository;
     ///
     /// # async fn example() -> Result<(), Box<dyn std::error::Error>> {
     /// let redis_client = redis::Client::open("redis://127.0.0.1:6379")?;
@@ -116,7 +116,8 @@ impl<R: ReadRepository, C: UrlCache> ReadRepository for CachedRepository<R, C> {
 mod tests {
     use super::*;
     use crate::cache::MokaUrlCache;
-    use wormhole_core::{InMemoryRepository, Repository};
+    use wormhole_core::Repository;
+    use wormhole_storage::InMemoryRepository;
 
     fn code(s: &str) -> ShortCode {
         ShortCode::new_unchecked(s)

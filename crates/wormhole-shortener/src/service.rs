@@ -146,7 +146,7 @@ fn storage_to_shortener_error(e: wormhole_core::StorageError) -> ShortenerError 
 mod tests {
     use super::*;
     use crate::generator::seq::UniqueGenerator;
-    use wormhole_core::InMemoryRepository;
+    use wormhole_storage::InMemoryRepository;
 
     fn test_service() -> ShortenerService<InMemoryRepository, UniqueGenerator> {
         let repo = InMemoryRepository::new();

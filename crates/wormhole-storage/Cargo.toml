@@ -1,0 +1,23 @@
+[package]
+name = "wormhole-storage"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+wormhole-core = { workspace = true }
+
+# Async runtime
+tokio = { workspace = true }
+
+# Time
+jiff = { workspace = true }
+
+# Async trait
+async-trait = { workspace = true }
+
+# Concurrency
+dashmap = "6"
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["full"] }

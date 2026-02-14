@@ -8,7 +8,7 @@
 //!
 //! ```rust,no_run
 //! use wormhole_redirector::{RedirectorService, RedisUrlCache, CachedRepository};
-//! use wormhole_core::InMemoryRepository;
+//! use wormhole_storage::InMemoryRepository;
 //! use wormhole_core::ShortCode;
 //!
 //! # async fn example() -> Result<(), Box<dyn std::error::Error>> {
@@ -37,7 +37,7 @@
 //!
 //! ```rust
 //! use wormhole_redirector::{RedirectorService, MokaUrlCache, CachedRepository};
-//! use wormhole_core::InMemoryRepository;
+//! use wormhole_storage::InMemoryRepository;
 //! use wormhole_core::ShortCode;
 //!
 //! # async fn example() -> Result<(), Box<dyn std::error::Error>> {

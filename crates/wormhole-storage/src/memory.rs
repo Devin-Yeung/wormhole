@@ -1,9 +1,9 @@
-use crate::error::StorageError;
-use crate::repository::{ReadRepository, Repository, Result, UrlRecord};
-use crate::shortcode::ShortCode;
 use async_trait::async_trait;
 use dashmap::DashMap;
 use jiff::Timestamp;
+use wormhole_core::error::StorageError;
+use wormhole_core::repository::{ReadRepository, Repository, Result, UrlRecord};
+use wormhole_core::shortcode::ShortCode;
 
 /// In-memory storage entry for a URL mapping.
 #[derive(Debug, Clone)]

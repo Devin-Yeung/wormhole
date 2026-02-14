@@ -12,5 +12,5 @@ pub use wormhole_core::{
     ShortCode, ShortenParams, Shortener, UrlRecord,
 };
 
-// Re-export InMemoryRepository from core
-pub use wormhole_core::InMemoryRepository;
+// Re-export InMemoryRepository from storage
+pub use wormhole_storage::InMemoryRepository;

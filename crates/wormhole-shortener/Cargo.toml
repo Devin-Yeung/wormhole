@@ -8,6 +8,7 @@ license.workspace = true
 # Workspace members
 wormhole-core = { workspace = true }
 wormhole-proto-schema = { workspace = true }
+wormhole-storage = { workspace = true }
 # Async
 async-trait = { workspace = true }
 tokio = { workspace = true }

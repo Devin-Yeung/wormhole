@@ -61,7 +61,8 @@ impl<R: ReadRepository> RedirectorService<R> {
 mod tests {
     use super::*;
     use jiff::SignedDuration;
-    use wormhole_core::{InMemoryRepository, Repository, UrlRecord};
+    use wormhole_core::{Repository, UrlRecord};
+    use wormhole_storage::InMemoryRepository;
 
     fn code(s: &str) -> ShortCode {
         ShortCode::new_unchecked(s)
