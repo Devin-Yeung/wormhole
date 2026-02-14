@@ -23,7 +23,7 @@
 //! round-trip to Redis) and most lookups are for non-existent codes.
 
 use async_trait::async_trait;
-use tokio::sync::RwLock;
+use parking_lot::RwLock;
 use typed_builder::TypedBuilder;
 use wormhole_core::{cache::Result, CacheError, ShortCode, UrlCache, UrlRecord};
 
@@ -110,11 +110,13 @@ impl<C: UrlCache> UrlCache for BloomFilter<C> {
     /// If the filter indicates the code might be present (including false
     /// positives), delegates to the underlying cache for the actual lookup.
     async fn get_url(&self, code: &ShortCode) -> Result<Option<UrlRecord>> {
-        let guard = self.bloom.read().await;
-        if !guard.check(code) {
-            // Bloom filter guarantees no false negatives - if it says not present,
-            // the code is definitely not in the cache
-            return Ok(None);
+        {
+            let guard = self.bloom.read();
+            if !guard.check(code) {
+                // Bloom filter guarantees no false negatives - if it says not present,
+                // the code is definitely not in the cache
+                return Ok(None);
+            }
         }
         // Bloom filter indicates the code might be present (could be a false positive)
         // Delegate to underlying cache to verify
@@ -127,8 +129,10 @@ impl<C: UrlCache> UrlCache for BloomFilter<C> {
     /// cache for actual storage. Once a code is added to the filter, subsequent
     /// `get_url` calls will check the underlying cache for that code.
     async fn set_url(&self, code: &ShortCode, record: &UrlRecord) -> Result<()> {
-        let mut guard = self.bloom.write().await;
-        guard.set(code);
+        {
+            let mut guard = self.bloom.write();
+            guard.set(code);
+        }
         self.cache.set_url(code, record).await
     }
 

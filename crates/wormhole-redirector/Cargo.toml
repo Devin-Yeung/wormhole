@@ -38,6 +38,7 @@ jiff = { workspace = true }
 
 # Tracing
 tracing = { workspace = true }
+parking_lot = "0.12.5"
 
 [dev-dependencies]
 tokio = { workspace = true, features = ["full"] }
