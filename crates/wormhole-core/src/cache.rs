@@ -3,7 +3,7 @@ use crate::shortcode::ShortCode;
 use async_trait::async_trait;
 use std::future::Future;
 
-type Result<T> = std::result::Result<T, crate::error::CacheError>;
+pub type Result<T> = std::result::Result<T, crate::error::CacheError>;
 
 /// A cache for URL records.
 ///

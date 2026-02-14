@@ -1,5 +1,6 @@
 //! Cache implementations for the redirector service.
 
+pub mod bloom_filter;
 pub mod layered;
 pub mod moka;
 pub mod redis;

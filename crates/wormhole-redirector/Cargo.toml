@@ -21,6 +21,9 @@ redis = { workspace = true, features = [
 ] }
 deadpool-redis = { version = "0.22.1", features = ["sentinel", "json"] }
 
+# Bloom filter
+bloomfilter = { version = "3" }
+
 # In-memory cache
 moka = { version = "0.12", features = ["future"] }
 
