@@ -1,4 +1,5 @@
 use crate::base58::ShortCodeBase58;
+use crate::error::Result;
 use serde::{Deserialize, Serialize};
 use std::fmt::Display;
 
@@ -41,7 +42,7 @@ impl ShortCode {
     /// Creates a new `ShortCode` after validating the input.
     ///
     /// Valid codes are 3-32 characters and contain only `[a-zA-Z0-9_-]`.
-    pub fn new(code: impl Into<String>) -> crate::Result<Self> {
+    pub fn new(code: impl Into<String>) -> Result<Self> {
         let code = code.into();
         Self::validate(&code)?;
         Ok(Self::Custom(code))
