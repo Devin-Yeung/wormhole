@@ -3,11 +3,13 @@
 //! This crate provides shared types and traits used by both the
 //! shortener service and the redirector service.
 
+pub mod base58;
 pub mod cache;
 pub mod error;
 pub mod repository;
 pub mod shortcode;
 pub mod shortener;
+pub mod slim_id;
 
 pub use cache::UrlCache;
 pub use error::{CacheError, Error, Result, ShortenerError, StorageError};
