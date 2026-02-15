@@ -13,7 +13,10 @@
   packages = with pkgs; [
     cargo-deny
     cargo-machete
+    cargo-nextest
     protobuf
+    iredis
+    mycli
   ];
 
   # https://devenv.sh/languages/
