@@ -17,6 +17,8 @@
     protobuf
     iredis
     mycli
+    lnav
+    just
   ];
 
   # https://devenv.sh/languages/
@@ -62,6 +64,7 @@
           lint-only = false;
         };
       };
+      trim-trailing-whitespace.enable = true;
     };
     package = pkgs.prek;
   };

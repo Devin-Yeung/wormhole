@@ -1,24 +1,24 @@
 services:
   # --- Redis Master ---
-  redis-master:
-    image: redis:7.0
-    container_name: redis-master
+  master:
+    image: redis:8.6.0
+    container_name: wormhole-redis-master
     command: redis-server
     ports:
       - "6379:6379"
   # --- Redis Slaves ---
-  redis-slave:
-    image: redis:7.0
-    container_name: redis-slave
-    command: redis-server --replicaof redis-master 6379
+  slave:
+    image: redis:8.6.0
+    container_name: wormhole-redis-slave
+    command: redis-server --replicaof wormhole-redis-master 6379
     ports:
       - "16379:6379"
     depends_on:
-      - redis-master
+      - master
   # --- Redis Sentinels ---
-  redis-sentinel:
-    image: redis:7.0
-    container_name: redis-sentinel
+  sentinel:
+    image: redis:8.6.0
+    container_name: wormhole-redis-sentinel
     command: |
       sh -c "cp /etc/redis/sentinel-template.conf /data/sentinel.conf && \
       chmod 777 /data/sentinel.conf && \
@@ -28,5 +28,5 @@ services:
     volumes:
       - ./sentinel/sentinel-template.conf:/etc/redis/sentinel-template.conf:ro
     depends_on:
-      - redis-master
-      - redis-slave
+      - master
+      - slave
