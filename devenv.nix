@@ -56,6 +56,12 @@
       };
       nixfmt.enable = true;
       taplo.enable = true;
+      yamlfmt = {
+        enable = true;
+        settings = {
+          lint-only = false;
+        };
+      };
     };
     package = pkgs.prek;
   };

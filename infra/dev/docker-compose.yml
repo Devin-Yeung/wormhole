@@ -1,0 +1,2 @@
+include:
+  - path: ./redis/docker-compose.yml

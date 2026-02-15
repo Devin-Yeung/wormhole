@@ -41,13 +41,10 @@ jobs:
       - uses: actions/checkout@v6
         with:
           submodules: true
-
       - name: Install Nix
         uses: DeterminateSystems/determinate-nix-action@main
-
       - name: Install devenv.sh
         run: nix profile add 'nixpkgs#devenv'
-
       - name: cargo clippy
         shell: devenv shell bash -- -e {0}
         run: cargo clippy --all-features --all-targets
@@ -58,19 +55,15 @@ jobs:
       - uses: actions/checkout@v6
         with:
           submodules: true
-
       - name: Install Nix
         uses: DeterminateSystems/determinate-nix-action@main
-
       - name: Install devenv.sh
         run: nix profile add 'nixpkgs#devenv'
-
       - name: cargo doc
         shell: devenv shell bash -- -e {0}
         run: cargo doc --no-deps --all-features
         env:
           RUSTDOCFLAGS: --cfg docsrs
-
   required:
     runs-on: ubuntu-latest
     name: ubuntu / ${{ matrix.toolchain }} / required
@@ -81,26 +74,20 @@ jobs:
       - uses: actions/checkout@v6
         with:
           submodules: true
-
       - name: Install Nix
         uses: DeterminateSystems/determinate-nix-action@main
-
       - name: Install devenv.sh
         run: nix profile add 'nixpkgs#devenv'
-
       - name: cargo generate-lockfile
         if: hashFiles('Cargo.lock') == ''
         run: cargo generate-lockfile
-
       - name: cargo test --locked
         shell: devenv shell bash -- -e {0}
         run: cargo test --locked --all-features --all-targets
-
       # https://github.com/rust-lang/cargo/issues/6669
       - name: cargo test --doc
         shell: devenv shell bash -- -e {0}
         run: cargo test --locked --all-features --doc
-
   os-check:
     runs-on: ${{ matrix.os }}
     name: ${{ matrix.os }} / stable / test
@@ -112,18 +99,14 @@ jobs:
       - uses: actions/checkout@v6
         with:
           submodules: true
-
       - name: Install Nix
         uses: DeterminateSystems/determinate-nix-action@main
-
       - name: Install devenv.sh
         run: nix profile add 'nixpkgs#devenv'
-
       - name: cargo generate-lockfile
         if: hashFiles('Cargo.lock') == ''
         shell: devenv shell bash -- -e {0}
         run: cargo generate-lockfile
-
       - name: cargo test
         shell: devenv shell bash -- -e {0}
         run: cargo test --locked --all-features --all-targets
