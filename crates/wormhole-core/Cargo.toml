@@ -20,7 +20,7 @@ async-trait = { workspace = true }
 
 # utils
 modular-bitfield = { version = "0.13.1" }
-bs58 = { version = "0.5.1" }
+bs58 = { workspace = true }
 smol_str = { version = "0.3.2", features = ["serde"] }
 
 [dev-dependencies]
