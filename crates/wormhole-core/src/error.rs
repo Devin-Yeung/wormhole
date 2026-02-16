@@ -30,6 +30,16 @@ impl From<Box<dyn std::error::Error + Send + Sync>> for CacheError {
 pub enum StorageError {
     #[error("alias already exists: {0}")]
     Conflict(String),
+    #[error("storage backend unavailable: {0}")]
+    Unavailable(String),
+    #[error("storage operation timed out: {0}")]
+    Timeout(String),
+    #[error("storage query failed: {0}")]
+    Query(String),
+    #[error("stored data is invalid: {0}")]
+    InvalidData(String),
+    #[error("cache error: {0}")]
+    Cache(#[from] CacheError),
     #[error(transparent)]
     Other(Box<dyn std::error::Error + Send + Sync>),
 }
@@ -48,4 +58,6 @@ pub enum ShortenerError {
     InvalidUrl(String),
     #[error("invalid short code: {0}")]
     InvalidShortCode(String),
+    #[error("storage error: {0}")]
+    Storage(String),
 }

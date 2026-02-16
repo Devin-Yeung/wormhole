@@ -19,5 +19,9 @@ async-trait = { workspace = true }
 # Concurrency
 dashmap = "6"
 
+# MySQL
+sqlx = { workspace = true, features = ["mysql", "runtime-tokio-rustls"] }
+
 [dev-dependencies]
 tokio = { workspace = true, features = ["full"] }
+wormhole-test-infra = { workspace = true }

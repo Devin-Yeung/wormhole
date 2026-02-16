@@ -1,2 +1,3 @@
 include:
   - path: ./redis/docker-compose.yml
+  - path: ./mysql/docker-compose.yml

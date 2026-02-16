@@ -61,10 +61,7 @@ impl<R: ReadRepository, C: UrlCache> CachedRepository<R, C> {
     /// and you want to ensure the next read fetches fresh data.
     pub async fn invalidate(&self, code: &ShortCode) -> Result<()> {
         trace!(code = %code, "Invalidating cache entry");
-        self.cache
-            .del(code)
-            .await
-            .map_err(|e| StorageError::Other(e.into()))
+        self.cache.del(code).await.map_err(StorageError::Cache)
     }
 }
 
@@ -87,7 +84,7 @@ impl<R: ReadRepository, C: UrlCache> ReadRepository for CachedRepository<R, C> {
                 }
             })
             .await
-            .map_err(|e| StorageError::Other(e.into()))
+            .map_err(StorageError::Cache)
     }
 
     async fn exists(&self, code: &ShortCode) -> Result<bool> {

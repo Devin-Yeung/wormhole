@@ -49,3 +49,6 @@ typed-builder = { version = "0.23.2" }
 
 # Redis
 redis = { version = "1.0.3", features = ["aio", "tokio-comp"] }
+
+# MySQL
+sqlx = { version = "0.8.6", default-features = false }

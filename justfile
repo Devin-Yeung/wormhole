@@ -8,4 +8,6 @@ logs:
   lnav \
     docker://wormhole-redis-master \
     docker://wormhole-redis-slave \
-    docker://wormhole-redis-sentinel
+    docker://wormhole-redis-sentinel \
+    docker://wormhole-mysql
+
