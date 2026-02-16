@@ -4,7 +4,7 @@ use jiff::{SignedDuration, Timestamp};
 use sqlx::mysql::MySqlPoolOptions;
 use wormhole_core::{ReadRepository, Repository, ShortCode, UrlRecord};
 use wormhole_storage::MySqlRepository;
-use wormhole_test_infra::mysql::MySqlServer;
+use wormhole_test_infra::mysql::{MySqlServer, MysqlConfig};
 
 struct Fixture {
     _mysql: MySqlServer,
@@ -13,7 +13,9 @@ struct Fixture {
 
 impl Fixture {
     async fn start() -> Self {
-        let mysql = MySqlServer::new().await.expect("start mysql");
+        let mysql = MySqlServer::new(MysqlConfig::builder().build())
+            .await
+            .expect("start mysql");
         let url = mysql.database_url().await.expect("mysql url");
         let pool = connect_with_retry(&url).await;
 

@@ -3,38 +3,38 @@ use testcontainers::core::{IntoContainerPort, WaitFor};
 use testcontainers::runners::AsyncRunner;
 use testcontainers::ImageExt;
 use testcontainers::{ContainerAsync, GenericImage};
+use typed_builder::TypedBuilder;
+
+#[derive(TypedBuilder)]
+pub struct MysqlConfig {
+    #[builder(default = "wormhole".to_string())]
+    database: String,
+    #[builder(default = "wormhole".to_string())]
+    username: String,
+    #[builder(default = "wormhole".to_string())]
+    password: String,
+}
 
 /// Test fixture for a disposable MySQL server.
 pub struct MySqlServer {
     container: ContainerAsync<GenericImage>,
-    database: String,
-    username: String,
-    password: String,
+    config: MysqlConfig,
 }
 
 impl MySqlServer {
     /// Starts a MySQL container suitable for integration tests.
-    pub async fn new() -> Result<Self> {
-        let database = "wormhole".to_string();
-        let username = "wormhole".to_string();
-        let password = "wormhole".to_string();
-
+    pub async fn new(config: MysqlConfig) -> Result<Self> {
         let container = GenericImage::new("mysql", "8.4")
             .with_exposed_port(3306_u16.tcp())
             .with_wait_for(WaitFor::message_on_stderr("ready for connections"))
-            .with_env_var("MYSQL_DATABASE", database.clone())
-            .with_env_var("MYSQL_USER", username.clone())
-            .with_env_var("MYSQL_PASSWORD", password.clone())
+            .with_env_var("MYSQL_DATABASE", config.database.as_str())
+            .with_env_var("MYSQL_USER", config.username.as_str())
+            .with_env_var("MYSQL_PASSWORD", config.password.as_str())
             .with_env_var("MYSQL_ROOT_PASSWORD", "root")
             .start()
             .await?;
 
-        Ok(Self {
-            container,
-            database,
-            username,
-            password,
-        })
+        Ok(Self { container, config })
     }
 
     pub async fn host(&self) -> Result<String> {
@@ -50,7 +50,7 @@ impl MySqlServer {
         let port = self.port().await?;
         Ok(format!(
             "mysql://{}:{}@{}:{}/{}",
-            self.username, self.password, host, port, self.database
+            self.config.username, self.config.password, host, port, self.config.database
         ))
     }
 
