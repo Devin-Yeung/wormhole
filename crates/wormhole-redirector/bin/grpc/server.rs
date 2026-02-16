@@ -1,15 +1,19 @@
-use redirector_proto::redirector_service_server::RedirectorService;
 use tonic::{Request, Response, Status};
-use wormhole_proto_schema::redirector::v1 as redirector_proto;
-use wormhole_proto_schema::redirector::v1::{ResolveRequest, ResolveResponse};
+use wormhole_core::{Repository, UrlCache};
+use wormhole_proto_schema::v1::{
+    redirector_service_server::RedirectorService, ResolveRequest, ResolveResponse,
+};
+use wormhole_redirector::CachedRepository;
 
-pub struct RedirectorGrpcServer {}
+pub struct RedirectorGrpcServer<R: Repository, C: UrlCache> {
+    storage: CachedRepository<R, C>,
+}
 
 #[tonic::async_trait]
-impl RedirectorService for RedirectorGrpcServer {
+impl<R: Repository, C: UrlCache> RedirectorService for RedirectorGrpcServer<R, C> {
     async fn resolve(
         &self,
-        request: Request<ResolveRequest>,
+        _request: Request<ResolveRequest>,
     ) -> Result<Response<ResolveResponse>, Status> {
         todo!()
     }
