@@ -3,6 +3,7 @@ syntax = "proto3";
 package shortener.v1;
 
 import "google/protobuf/timestamp.proto";
+import "shortcode.proto";
 
 service ShortenerService {
   // Creates a short URL for the given original URL.
@@ -20,5 +21,5 @@ message CreateRequest {
 
 message CreateResponse {
   // The generated short code for the original URL.
-  string short_code = 1;
+  shortcode.v1.ShortCode short_code = 1;
 }

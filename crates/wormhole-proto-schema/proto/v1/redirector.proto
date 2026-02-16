@@ -3,6 +3,7 @@ syntax = "proto3";
 package redirector.v1;
 
 import "google/protobuf/timestamp.proto";
+import "shortcode.proto";
 
 service RedirectorService {
   // Resolves a short code to its destination URL.
@@ -17,7 +18,7 @@ service RedirectorService {
 message ResolveRequest {
   // The short code to resolve.
   // Expected format: 3-32 chars, [a-zA-Z0-9_-].
-  string short_code = 1;
+  .shortcode.v1.ShortCode short_code = 1;
 }
 
 message ResolveResponse {
