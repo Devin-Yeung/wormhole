@@ -17,6 +17,24 @@ pub struct RedisHAUrlCache {
     key_prefix: String,
 }
 
+fn map_redis_error(operation: &str, err: deadpool_redis::redis::RedisError) -> CacheError {
+    let message = format!("{operation}: {err}");
+    if message.to_ascii_lowercase().contains("timed out") {
+        CacheError::Timeout(message)
+    } else {
+        CacheError::Operation(message)
+    }
+}
+
+fn map_pool_error(operation: &str, err: impl std::fmt::Display) -> CacheError {
+    let message = format!("{operation}: {err}");
+    if message.to_ascii_lowercase().contains("timed out") {
+        CacheError::Timeout(message)
+    } else {
+        CacheError::Unavailable(message)
+    }
+}
+
 impl RedisHAUrlCache {
     /// Creates a new high-availability Redis URL cache using Sentinel.
     ///
@@ -24,7 +42,7 @@ impl RedisHAUrlCache {
     ///
     /// * `sentinels` - List of sentinel addresses (e.g., `["redis://localhost:26379"]`)
     /// * `service_name` - The Redis service name to look up (e.g., "mymaster")
-    pub fn new<T: AsRef<str>>(sentinels: Vec<T>, service_name: &str) -> Self {
+    pub fn new<T: AsRef<str>>(sentinels: Vec<T>, service_name: &str) -> Result<Self> {
         Self::with_prefix(sentinels, service_name, "wh:url:")
     }
 
@@ -39,7 +57,7 @@ impl RedisHAUrlCache {
         sentinels: Vec<T>,
         service_name: &str,
         key_prefix: impl Into<String>,
-    ) -> Self {
+    ) -> Result<Self> {
         let sentinels = sentinels
             .iter()
             .map(|s| s.as_ref().to_string())
@@ -51,7 +69,9 @@ impl RedisHAUrlCache {
             deadpool_redis::sentinel::SentinelServerType::Master,
         );
 
-        let master_pool = config.create_pool(None).unwrap();
+        let master_pool = config.create_pool(None).map_err(|e| {
+            CacheError::Initialization(format!("failed to create master pool: {e}"))
+        })?;
 
         let replica_config = deadpool_redis::sentinel::Config::from_urls(
             sentinels,
@@ -59,13 +79,15 @@ impl RedisHAUrlCache {
             deadpool_redis::sentinel::SentinelServerType::Replica,
         );
 
-        let replica_pool = replica_config.create_pool(None).unwrap();
+        let replica_pool = replica_config.create_pool(None).map_err(|e| {
+            CacheError::Initialization(format!("failed to create replica pool: {e}"))
+        })?;
 
-        Self {
+        Ok(Self {
             master_pool,
             replica_pool,
             key_prefix: key_prefix.into(),
-        }
+        })
     }
 
     /// Generates the cache key for a short code.
@@ -80,7 +102,11 @@ impl UrlCache for RedisHAUrlCache {
         let key = self.cache_key(code);
         trace!(code = %code, "Fetching URL record from Redis HA cache (replica)");
 
-        let mut conn = self.replica_pool.get().await.unwrap();
+        let mut conn = self
+            .replica_pool
+            .get()
+            .await
+            .map_err(|e| map_pool_error("failed to get replica connection", e))?;
 
         match conn.get::<_, Option<String>>(&key).await {
             Ok(Some(cached)) => {
@@ -89,7 +115,9 @@ impl UrlCache for RedisHAUrlCache {
                     Ok(record) => Ok(Some(record)),
                     Err(e) => {
                         warn!(code = %code, error = %e, "Failed to deserialize cached record");
-                        Ok(None)
+                        Err(CacheError::InvalidData(format!(
+                            "invalid cached value for key '{key}': {e}"
+                        )))
                     }
                 }
             }
@@ -99,7 +127,7 @@ impl UrlCache for RedisHAUrlCache {
             }
             Err(e) => {
                 warn!(code = %code, error = %e, "Redis error on get from replica");
-                Err(CacheError::Other(e.into()))
+                Err(map_redis_error("failed to fetch value from replica", e))
             }
         }
     }
@@ -112,7 +140,9 @@ impl UrlCache for RedisHAUrlCache {
             Ok(json) => json,
             Err(e) => {
                 warn!(code = %code, error = %e, "Failed to serialize record for caching");
-                return Err(CacheError::Other(e.into()));
+                return Err(CacheError::Serialization(format!(
+                    "failed to serialize cache value: {e}"
+                )));
             }
         };
 
@@ -120,7 +150,7 @@ impl UrlCache for RedisHAUrlCache {
             Ok(conn) => conn,
             Err(e) => {
                 warn!(code = %code, error = %e, "Failed to get connection from master pool");
-                return Err(CacheError::Other(e.into()));
+                return Err(map_pool_error("failed to get master connection", e));
             }
         };
 
@@ -131,7 +161,7 @@ impl UrlCache for RedisHAUrlCache {
             }
             Err(e) => {
                 warn!(code = %code, error = %e, "Failed to cache record in Redis HA");
-                Err(CacheError::Other(e.into()))
+                Err(map_redis_error("failed to write value to master", e))
             }
         }
     }
@@ -144,7 +174,7 @@ impl UrlCache for RedisHAUrlCache {
             Ok(conn) => conn,
             Err(e) => {
                 warn!(code = %code, error = %e, "Failed to get connection from master pool");
-                return Err(CacheError::Other(e.into()));
+                return Err(map_pool_error("failed to get master connection", e));
             }
         };
 
@@ -155,7 +185,7 @@ impl UrlCache for RedisHAUrlCache {
             }
             Err(e) => {
                 warn!(code = %code, error = %e, "Failed to remove record from Redis HA cache");
-                Err(CacheError::Other(e.into()))
+                Err(map_redis_error("failed to delete value from master", e))
             }
         }
     }
@@ -172,6 +202,6 @@ mod tests {
 
         let sentinels = redis.sentinel_addresses().await;
 
-        let _ = RedisHAUrlCache::new(sentinels, redis.name());
+        let _ = RedisHAUrlCache::new(sentinels, redis.name()).unwrap();
     }
 }

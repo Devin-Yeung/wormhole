@@ -128,15 +128,16 @@ impl UrlCache for MokaUrlCache {
 
         let key = code.as_str().to_string();
 
-        // Moka's get_with provides single-flight semantics:
+        // Moka's try_get_with provides single-flight semantics:
         // concurrent requests for the same key will coalesce into a single fetch
         let result = self
             .cache
-            .get_with(key, async {
+            .try_get_with(key, async {
                 trace!(code = %code, "Cache miss, performing single-flight fetch");
-                fetch(code).await.ok().flatten()
+                fetch(code).await
             })
-            .await;
+            .await
+            .map_err(|e| e.as_ref().clone())?;
 
         debug!(code = %code, "Single-flight fetch completed");
         Ok(result)
@@ -403,5 +404,20 @@ mod tests {
             5,
             "Different keys should be fetched independently"
         );
+    }
+
+    #[tokio::test]
+    async fn single_flight_propagates_fetch_error() {
+        let cache = MokaUrlCache::new();
+        let c = code("abc123");
+
+        let err = cache
+            .get_or_compute(&c, |_code| async {
+                Err(CacheError::Timeout("simulated timeout".to_string()))
+            })
+            .await
+            .unwrap_err();
+
+        assert!(matches!(err, CacheError::Timeout(_)));
     }
 }

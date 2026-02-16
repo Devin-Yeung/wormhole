@@ -12,7 +12,7 @@ pub mod shortener;
 pub mod slim_id;
 
 pub use cache::UrlCache;
-pub use error::{CacheError, Error, Result, ShortenerError, StorageError};
+pub use error::{CacheError, ShortenerError, StorageError};
 pub use repository::{ReadRepository, Repository, UrlRecord};
 pub use shortcode::ShortCode;
 pub use shortener::{ExpirationPolicy, ShortenParams, Shortener};

@@ -1,5 +1,5 @@
 use crate::base58::ShortCodeBase58;
-use crate::error::Result;
+use crate::error::ShortenerError;
 use serde::{Deserialize, Serialize};
 use std::fmt::Display;
 
@@ -42,7 +42,7 @@ impl ShortCode {
     /// Creates a new `ShortCode` after validating the input.
     ///
     /// Valid codes are 3-32 characters and contain only `[a-zA-Z0-9_-]`.
-    pub fn new(code: impl Into<String>) -> Result<Self> {
+    pub fn new(code: impl Into<String>) -> std::result::Result<Self, ShortenerError> {
         let code = code.into();
         Self::validate(&code)?;
         Ok(Self::Custom(code))
@@ -69,28 +69,24 @@ impl ShortCode {
         }
     }
 
-    fn validate(code: &str) -> crate::Result<()> {
+    fn validate(code: &str) -> std::result::Result<(), ShortenerError> {
         if code.len() < MIN_LENGTH || code.len() > MAX_LENGTH {
-            return Err(crate::Error::Shortener(
-                crate::ShortenerError::InvalidShortCode(format!(
-                    "length must be between {} and {}, got {}",
-                    MIN_LENGTH,
-                    MAX_LENGTH,
-                    code.len()
-                )),
-            ));
+            return Err(ShortenerError::InvalidShortCode(format!(
+                "length must be between {} and {}, got {}",
+                MIN_LENGTH,
+                MAX_LENGTH,
+                code.len()
+            )));
         }
 
         if !code
             .chars()
             .all(|c| c.is_ascii_alphanumeric() || c == '-' || c == '_')
         {
-            return Err(crate::Error::Shortener(
-                crate::ShortenerError::InvalidShortCode(format!(
-                    "must contain only alphanumeric characters, hyphens, or underscores: '{}'",
-                    code
-                )),
-            ));
+            return Err(ShortenerError::InvalidShortCode(format!(
+                "must contain only alphanumeric characters, hyphens, or underscores: '{}'",
+                code
+            )));
         }
 
         Ok(())

@@ -1,6 +1,6 @@
 use std::time::Duration;
 
-use wormhole_core::{ShortCode, UrlCache, UrlRecord};
+use wormhole_core::{CacheError, ShortCode, UrlCache, UrlRecord};
 use wormhole_redirector::cache::RedisHAUrlCache;
 use wormhole_test_infra::redis::{RedisHA, RedisHAConfig};
 
@@ -38,12 +38,15 @@ impl RedisHATestFixture {
     }
 
     /// Creates a new RedisHAUrlCache instance.
-    pub fn create_cache(&self) -> RedisHAUrlCache {
+    pub fn create_cache(&self) -> Result<RedisHAUrlCache, CacheError> {
         RedisHAUrlCache::new(self.sentinel_urls.clone(), &self.service_name)
     }
 
     /// Creates a new RedisHAUrlCache instance with custom prefix.
-    pub fn create_cache_with_prefix(&self, prefix: impl Into<String>) -> RedisHAUrlCache {
+    pub fn create_cache_with_prefix(
+        &self,
+        prefix: impl Into<String>,
+    ) -> Result<RedisHAUrlCache, CacheError> {
         RedisHAUrlCache::with_prefix(self.sentinel_urls.clone(), &self.service_name, prefix)
     }
 }
@@ -59,7 +62,7 @@ fn create_test_record(url: impl Into<String>) -> UrlRecord {
 #[tokio::test]
 async fn test_redis_ha_cache_basic_get_set() {
     let fixture = RedisHATestFixture::start().await;
-    let cache = fixture.create_cache();
+    let cache = fixture.create_cache().unwrap();
 
     for i in 0..100 {
         let code = ShortCode::new(format!("testcode{i}")).unwrap();

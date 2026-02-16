@@ -16,6 +16,15 @@ pub struct RedisUrlCache {
     key_prefix: String,
 }
 
+fn map_redis_error(operation: &str, err: redis::RedisError) -> CacheError {
+    let message = format!("{operation}: {err}");
+    if message.to_ascii_lowercase().contains("timed out") {
+        CacheError::Timeout(message)
+    } else {
+        CacheError::Operation(message)
+    }
+}
+
 impl RedisUrlCache {
     /// Creates a new Redis URL cache.
     ///
@@ -65,7 +74,9 @@ impl UrlCache for RedisUrlCache {
                     Ok(record) => Ok(Some(record)),
                     Err(e) => {
                         warn!(code = %code, error = %e, "Failed to deserialize cached record");
-                        Ok(None)
+                        Err(CacheError::InvalidData(format!(
+                            "invalid cached value for key '{key}': {e}"
+                        )))
                     }
                 }
             }
@@ -75,7 +86,7 @@ impl UrlCache for RedisUrlCache {
             }
             Err(e) => {
                 warn!(code = %code, error = %e, "Redis error on get");
-                Err(CacheError::Other(e.into()))
+                Err(map_redis_error("failed to fetch value from Redis", e))
             }
         }
     }
@@ -88,7 +99,9 @@ impl UrlCache for RedisUrlCache {
             Ok(json) => json,
             Err(e) => {
                 warn!(code = %code, error = %e, "Failed to serialize record for caching");
-                return Err(CacheError::Other(e.into()));
+                return Err(CacheError::Serialization(format!(
+                    "failed to serialize cache value: {e}"
+                )));
             }
         };
 
@@ -100,7 +113,7 @@ impl UrlCache for RedisUrlCache {
             }
             Err(e) => {
                 warn!(code = %code, error = %e, "Failed to cache record in Redis");
-                Err(CacheError::Other(e.into()))
+                Err(map_redis_error("failed to write value to Redis", e))
             }
         }
     }
@@ -117,7 +130,7 @@ impl UrlCache for RedisUrlCache {
             }
             Err(e) => {
                 warn!(code = %code, error = %e, "Failed to remove record from Redis cache");
-                Err(CacheError::Other(e.into()))
+                Err(map_redis_error("failed to delete value from Redis", e))
             }
         }
     }

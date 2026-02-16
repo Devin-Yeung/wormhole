@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use jiff::Timestamp;
 use tracing::{debug, trace};
-use wormhole_core::{ReadRepository, Result, ShortCode};
+use wormhole_core::{repository::Result, ReadRepository, ShortCode};
 
 /// Service for handling URL redirects.
 ///

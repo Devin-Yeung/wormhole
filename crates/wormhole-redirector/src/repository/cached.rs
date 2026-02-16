@@ -1,5 +1,5 @@
 use async_trait::async_trait;
-use tracing::{debug, trace, warn};
+use tracing::{debug, trace};
 use wormhole_core::{ReadRepository, ShortCode, StorageError, UrlCache, UrlRecord};
 
 /// Type alias for repository results.
@@ -77,10 +77,11 @@ impl<R: ReadRepository, C: UrlCache> ReadRepository for CachedRepository<R, C> {
                 let code = c.clone();
                 async move {
                     trace!(code = %code, "Cache miss, fetching from inner repository");
-                    self.inner
-                        .get(&code)
-                        .await
-                        .map_err(|e| wormhole_core::CacheError::Other(e.into()))
+                    self.inner.get(&code).await.map_err(|e| {
+                        wormhole_core::CacheError::Operation(format!(
+                            "repository fetch failed: {e}"
+                        ))
+                    })
                 }
             })
             .await
@@ -91,16 +92,18 @@ impl<R: ReadRepository, C: UrlCache> ReadRepository for CachedRepository<R, C> {
         trace!(code = %code, "Checking existence via get");
 
         // Use get_url for existence check - if it returns Some, it exists
-        match self.cache.get_url(code).await {
-            Ok(Some(_)) => {
+        match self
+            .cache
+            .get_url(code)
+            .await
+            .map_err(StorageError::Cache)?
+        {
+            Some(_) => {
                 debug!(code = %code, "Cache hit indicates code exists");
                 return Ok(true);
             }
-            Ok(None) => {
+            None => {
                 trace!(code = %code, "Cache miss for existence check");
-            }
-            Err(e) => {
-                warn!(code = %code, error = %e, "Cache error on existence check, falling back to inner repository");
             }
         }
 

@@ -1,32 +1,23 @@
+use std::sync::Arc;
 use thiserror::Error;
 
-/// Type alias for the result type used in the URL shortener service.
-pub type Result<T> = std::result::Result<T, Error>;
-
-// Centralized error type for the URL shortener service, encompassing all possible error cases
-#[derive(Debug, Error)]
-pub enum Error {
-    #[error("cache error: {0}")]
-    Cache(#[from] CacheError),
-    #[error("storage error: {0}")]
-    Storage(#[from] StorageError),
-    #[error("shortener error: {0}")]
-    Shortener(#[from] ShortenerError),
-}
-
-#[derive(Debug, Error)]
+#[derive(Debug, Clone, Error)]
 pub enum CacheError {
-    #[error(transparent)]
-    Other(Box<dyn std::error::Error + Send + Sync>),
+    #[error("cache backend unavailable: {0}")]
+    Unavailable(String),
+    #[error("cache operation timed out: {0}")]
+    Timeout(String),
+    #[error("cache serialization failed: {0}")]
+    Serialization(String),
+    #[error("cache value is invalid: {0}")]
+    InvalidData(String),
+    #[error("cache initialization failed: {0}")]
+    Initialization(String),
+    #[error("cache operation failed: {0}")]
+    Operation(String),
 }
 
-impl From<Box<dyn std::error::Error + Send + Sync>> for CacheError {
-    fn from(err: Box<dyn std::error::Error + Send + Sync>) -> Self {
-        Self::Other(err)
-    }
-}
-
-#[derive(Debug, Error)]
+#[derive(Debug, Clone, Error)]
 pub enum StorageError {
     #[error("alias already exists: {0}")]
     Conflict(String),
@@ -40,17 +31,11 @@ pub enum StorageError {
     InvalidData(String),
     #[error("cache error: {0}")]
     Cache(#[from] CacheError),
-    #[error(transparent)]
-    Other(Box<dyn std::error::Error + Send + Sync>),
+    #[error("storage operation failed: {0}")]
+    Operation(String),
 }
 
-impl From<Box<dyn std::error::Error + Send + Sync>> for StorageError {
-    fn from(err: Box<dyn std::error::Error + Send + Sync>) -> Self {
-        Self::Other(err)
-    }
-}
-
-#[derive(Debug, Error)]
+#[derive(Debug, Clone, Error)]
 pub enum ShortenerError {
     #[error("alias already exists: {0}")]
     AliasConflict(String),
@@ -59,5 +44,14 @@ pub enum ShortenerError {
     #[error("invalid short code: {0}")]
     InvalidShortCode(String),
     #[error("storage error: {0}")]
-    Storage(String),
+    Storage(#[source] StorageError),
+}
+
+impl From<StorageError> for ShortenerError {
+    fn from(err: StorageError) -> Self {
+        match err {
+            StorageError::Conflict(code) => Self::AliasConflict(code),
+            other => Self::Storage(other),
+        }
+    }
 }

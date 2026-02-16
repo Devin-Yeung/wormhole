@@ -134,9 +134,8 @@ where
         match self.l2.get_url(code).await? {
             Some(record) => {
                 debug!(code = %code, "L2 cache hit, backfilling L1");
-                // Backfill L1 with the record from L2
-                // Ignore errors from L1 set - L2 hit is already a success
-                let _ = self.l1.set_url(code, &record).await;
+                // Backfill L1 with the record from L2 so subsequent reads stay local.
+                self.l1.set_url(code, &record).await?;
                 Ok(Some(record))
             }
             None => {

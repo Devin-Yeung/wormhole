@@ -136,10 +136,7 @@ impl<R: Repository, G: Generator> Shortener for ShortenerService<R, G> {
 
 /// Converts a StorageError to a ShortenerError.
 fn storage_to_shortener_error(e: wormhole_core::StorageError) -> ShortenerError {
-    match e {
-        wormhole_core::StorageError::Conflict(code) => ShortenerError::AliasConflict(code),
-        other => ShortenerError::Storage(other.to_string()),
-    }
+    e.into()
 }
 
 #[cfg(test)]

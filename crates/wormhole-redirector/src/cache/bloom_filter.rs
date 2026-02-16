@@ -89,11 +89,11 @@ impl<C: UrlCache> BloomFilter<C> {
     ///
     /// # Errors
     ///
-    /// Returns `CacheError::Other` if the Bloom filter initialization fails.
+    /// Returns `CacheError::Initialization` if Bloom filter setup fails.
     pub fn new(config: BloomFilterConfig, cache: C) -> Result<Self> {
         let bloom =
             bloomfilter::Bloom::new_for_fp_rate(config.expected_items, config.false_positive_rate)
-                .map_err(|e| CacheError::Other(e.into()))?;
+                .map_err(|e| CacheError::Initialization(e.to_string()))?;
         let bloom = RwLock::new(bloom);
         Ok(Self { bloom, cache })
     }

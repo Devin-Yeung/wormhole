@@ -1,7 +1,7 @@
 use std::time::Duration;
 
 use redis::AsyncCommands;
-use wormhole_core::{ShortCode, UrlCache, UrlRecord};
+use wormhole_core::{CacheError, ShortCode, UrlCache, UrlRecord};
 use wormhole_redirector::cache::RedisUrlCache;
 use wormhole_test_infra::redis::RedisMaster;
 
@@ -189,6 +189,22 @@ async fn test_redis_cache_nonexistent_key() {
     // Try to delete a key that doesn't exist (should not error)
     let result = cache.del(&code).await;
     assert!(result.is_ok(), "Deleting nonexistent key should not error");
+}
+
+#[tokio::test]
+async fn test_redis_cache_invalid_json_returns_error() {
+    let fixture = RedisTestContainer::start().await;
+    let conn = fixture.create_connection().await;
+
+    // Insert malformed JSON via raw Redis command to emulate data corruption.
+    let mut redis_conn = fixture.create_connection().await;
+    let code = ShortCode::new("invalid_json").unwrap();
+    let key = format!("wh:url:{}", code.as_str());
+    redis_conn.set::<_, _, ()>(&key, "{not json").await.unwrap();
+
+    let cache = RedisUrlCache::new(conn);
+    let err = cache.get_url(&code).await.unwrap_err();
+    assert!(matches!(err, CacheError::InvalidData(_)));
 }
 
 #[tokio::test]

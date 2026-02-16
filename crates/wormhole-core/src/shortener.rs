@@ -4,7 +4,7 @@ use async_trait::async_trait;
 use jiff::Timestamp;
 use std::time::Duration;
 
-type Result<T> = std::result::Result<T, crate::error::ShortenerError>;
+pub type Result<T> = std::result::Result<T, crate::error::ShortenerError>;
 
 /// Expiration policy for a shortened URL.
 #[derive(Debug, Clone)]
