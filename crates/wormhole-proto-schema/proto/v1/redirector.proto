@@ -22,10 +22,6 @@ message ResolveRequest {
 }
 
 message ResolveResponse {
-  // The destination URL for this short code.
-  string original_url = 1;
-
-  // Expiration timestamp for this mapping.
-  // If unset, the short code never expires.
-  google.protobuf.Timestamp expire_at = 2;
+  // The URL record containing the original URL and expiration info.
+  .shortcode.v1.UrlRecord url_record = 1;
 }

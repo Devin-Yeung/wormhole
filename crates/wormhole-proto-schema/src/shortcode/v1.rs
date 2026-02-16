@@ -3,7 +3,7 @@ use wormhole_core::ShortenerError;
 
 tonic::include_proto!("shortcode.v1");
 
-impl TryInto<wormhole_core::ShortCode> for ShortCode {
+impl TryInto<wormhole_core::ShortCode> for &ShortCode {
     type Error = ShortenerError;
 
     fn try_into(self) -> Result<wormhole_core::ShortCode, Self::Error> {
@@ -15,15 +15,23 @@ impl TryInto<wormhole_core::ShortCode> for ShortCode {
             ShortCodeKind::Generated => {
                 // We decode then re-encode to preserve the generated variant while
                 // ensuring the wire value is valid base58.
-                let decoded = bs58::decode(self.code).into_vec().map_err(|e| {
+                let decoded = bs58::decode(self.code.as_str()).into_vec().map_err(|e| {
                     ShortenerError::InvalidShortCode(format!("invalid base58 short code: {}", e))
                 })?;
                 Ok(wormhole_core::ShortCode::generated(
                     wormhole_core::base58::ShortCodeBase58::new(decoded),
                 ))
             }
-            ShortCodeKind::Custom => wormhole_core::ShortCode::new(self.code),
+            ShortCodeKind::Custom => wormhole_core::ShortCode::new(self.code.as_str()),
         }
+    }
+}
+
+impl TryInto<wormhole_core::ShortCode> for ShortCode {
+    type Error = ShortenerError;
+
+    fn try_into(self) -> Result<wormhole_core::ShortCode, Self::Error> {
+        (&self).try_into()
     }
 }
 
