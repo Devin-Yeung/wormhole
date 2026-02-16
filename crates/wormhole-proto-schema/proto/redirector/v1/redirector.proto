@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+package redirector.v1;
+
+import "google/protobuf/timestamp.proto";
+
+service RedirectorService {
+  // Resolves a short code to its destination URL.
+  //
+  // Suggested status mapping:
+  // - INVALID_ARGUMENT: short_code is malformed.
+  // - NOT_FOUND: short code does not exist or is expired.
+  // - UNAVAILABLE/DEADLINE_EXCEEDED/INTERNAL: backend/cache/storage failures.
+  rpc Resolve (ResolveRequest) returns (ResolveResponse);
+}
+
+message ResolveRequest {
+  // The short code to resolve.
+  // Expected format: 3-32 chars, [a-zA-Z0-9_-].
+  string short_code = 1;
+}
+
+message ResolveResponse {
+  // The destination URL for this short code.
+  string original_url = 1;
+
+  // Expiration timestamp for this mapping.
+  // If unset, the short code never expires.
+  google.protobuf.Timestamp expire_at = 2;
+}

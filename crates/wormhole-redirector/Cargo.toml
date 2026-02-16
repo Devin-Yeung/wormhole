@@ -4,13 +4,20 @@ version.workspace = true
 edition.workspace = true
 license.workspace = true
 
+[[bin]]
+name = "wormhole-redirector-grpc-server"
+path = "bin/grpc/main.rs"
+
+
 [dependencies]
 # Workspace members
 wormhole-core = { workspace = true }
+wormhole-proto-schema = { workspace = true }
+wormhole-storage = { workspace = true }
 
 # Async
 async-trait = { workspace = true }
-tokio = { workspace = true }
+tokio = { workspace = true, features = ["full"] }
 
 # Redis
 redis = { workspace = true, features = [
@@ -40,8 +47,9 @@ jiff = { workspace = true }
 tracing = { workspace = true }
 parking_lot = "0.12.5"
 
+# gRPC
+tonic = { workspace = true }
+
 [dev-dependencies]
-tokio = { workspace = true, features = ["full"] }
 wormhole-test-infra = { workspace = true }
-wormhole-storage = { workspace = true }
 awaitility = "0.4.1"
