@@ -49,6 +49,7 @@ parking_lot = "0.12.5"
 
 # gRPC
 tonic = { workspace = true }
+prost-types = { workspace = true }
 
 [dev-dependencies]
 wormhole-test-infra = { workspace = true }
