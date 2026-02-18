@@ -2,7 +2,8 @@ use std::sync::Arc;
 
 use jiff::Timestamp;
 use tracing::{debug, trace};
-use wormhole_core::{repository::Result, ReadRepository, ShortCode};
+use wormhole_core::ShortCode;
+use wormhole_storage::{ReadRepository, Result};
 
 /// Service for handling URL redirects.
 ///
@@ -61,8 +62,8 @@ impl<R: ReadRepository> RedirectorService<R> {
 mod tests {
     use super::*;
     use jiff::SignedDuration;
-    use wormhole_core::{Repository, UrlRecord};
-    use wormhole_storage::InMemoryRepository;
+    use wormhole_core::UrlRecord;
+    use wormhole_storage::{InMemoryRepository, Repository};
 
     fn code(s: &str) -> ShortCode {
         ShortCode::new_unchecked(s)

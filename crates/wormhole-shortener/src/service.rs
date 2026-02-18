@@ -3,8 +3,9 @@ use async_trait::async_trait;
 use jiff::Timestamp;
 use std::sync::Arc;
 use wormhole_core::{
-    ExpirationPolicy, Repository, ShortCode, ShortenParams, Shortener, ShortenerError, UrlRecord,
+    ExpirationPolicy, ShortCode, ShortenParams, Shortener, ShortenerError, UrlRecord,
 };
+use wormhole_storage::{Repository, StorageError};
 
 /// A concrete implementation of the `Shortener` trait.
 ///
@@ -135,8 +136,11 @@ impl<R: Repository, G: Generator> Shortener for ShortenerService<R, G> {
 }
 
 /// Converts a StorageError to a ShortenerError.
-fn storage_to_shortener_error(e: wormhole_core::StorageError) -> ShortenerError {
-    e.into()
+fn storage_to_shortener_error(error: StorageError) -> ShortenerError {
+    match error {
+        StorageError::Conflict(code) => ShortenerError::AliasConflict(code),
+        other => ShortenerError::Storage(other.to_string()),
+    }
 }
 
 #[cfg(test)]

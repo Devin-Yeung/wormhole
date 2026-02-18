@@ -1,8 +1,8 @@
 use std::sync::Arc;
 use thiserror::Error;
 use tonic::{Code, Status};
-use wormhole_core::StorageError;
 use wormhole_proto_schema::v1::ConversionError;
+use wormhole_storage::StorageError;
 
 #[derive(Debug, Error)]
 pub(crate) enum RedirectorError {

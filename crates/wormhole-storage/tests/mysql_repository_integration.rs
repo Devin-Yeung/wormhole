@@ -2,8 +2,8 @@ use std::time::Duration;
 
 use jiff::{SignedDuration, Timestamp};
 use sqlx::mysql::MySqlPoolOptions;
-use wormhole_core::{ReadRepository, Repository, ShortCode, UrlRecord};
-use wormhole_storage::MySqlRepository;
+use wormhole_core::{ShortCode, UrlRecord};
+use wormhole_storage::{MySqlRepository, ReadRepository, Repository, StorageError};
 use wormhole_test_infra::mysql::{MySqlServer, MysqlConfig};
 
 struct Fixture {
@@ -95,7 +95,7 @@ async fn insert_conflicts_when_code_already_exists() {
         .await
         .unwrap_err();
 
-    assert!(matches!(err, wormhole_core::StorageError::Conflict(_)));
+    assert!(matches!(err, StorageError::Conflict(_)));
 }
 
 #[tokio::test]

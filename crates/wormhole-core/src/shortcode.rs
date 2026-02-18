@@ -1,5 +1,6 @@
 use crate::base58::ShortCodeBase58;
 use crate::error::ShortenerError;
+use jiff::Timestamp;
 use serde::{Deserialize, Serialize};
 use std::fmt::Display;
 
@@ -13,6 +14,15 @@ pub enum ShortCode {
     Generated(ShortCodeBase58),
     /// A user-provided custom short code.
     Custom(String),
+}
+
+/// A stored URL record in the repository.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct UrlRecord {
+    /// The original URL that was shortened.
+    pub original_url: String,
+    /// When the record expires, if ever.
+    pub expire_at: Option<Timestamp>,
 }
 
 const MIN_LENGTH: usize = 3;

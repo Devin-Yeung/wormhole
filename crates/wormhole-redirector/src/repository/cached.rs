@@ -1,6 +1,7 @@
 use async_trait::async_trait;
 use tracing::{debug, trace};
-use wormhole_core::{ReadRepository, ShortCode, StorageError, UrlCache, UrlRecord};
+use wormhole_core::{ShortCode, UrlCache, UrlRecord};
+use wormhole_storage::{ReadRepository, StorageError};
 
 /// Type alias for repository results.
 pub type Result<T> = std::result::Result<T, StorageError>;
@@ -116,8 +117,7 @@ impl<R: ReadRepository, C: UrlCache> ReadRepository for CachedRepository<R, C> {
 mod tests {
     use super::*;
     use crate::cache::MokaUrlCache;
-    use wormhole_core::Repository;
-    use wormhole_storage::InMemoryRepository;
+    use wormhole_storage::{InMemoryRepository, Repository};
 
     fn code(s: &str) -> ShortCode {
         ShortCode::new_unchecked(s)

@@ -8,9 +8,10 @@ pub mod service;
 
 // Re-export core types
 pub use wormhole_core::{
-    error, shortcode, shortener, CacheError, ExpirationPolicy, ReadRepository, Repository,
-    ShortCode, ShortenParams, Shortener, ShortenerError, StorageError, UrlRecord,
+    error, shortcode, shortener, CacheError, ExpirationPolicy, ShortCode, ShortenParams, Shortener,
+    ShortenerError, UrlRecord,
 };
+pub use wormhole_storage::{ReadRepository, Repository, StorageError};
 
 // Re-export InMemoryRepository from storage
 pub use wormhole_storage::InMemoryRepository;

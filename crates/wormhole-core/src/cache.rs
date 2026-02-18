@@ -1,5 +1,5 @@
-use crate::repository::UrlRecord;
 use crate::shortcode::ShortCode;
+use crate::UrlRecord;
 use async_trait::async_trait;
 use std::future::Future;
 

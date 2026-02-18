@@ -1,9 +1,9 @@
 use async_trait::async_trait;
 use jiff::Timestamp;
 use sqlx::{MySqlPool, Row};
-use wormhole_core::error::StorageError;
-use wormhole_core::repository::{ReadRepository, Repository, Result, UrlRecord};
-use wormhole_core::shortcode::ShortCode;
+use wormhole_core::{ShortCode, UrlRecord};
+
+use crate::{ReadRepository, Repository, Result, StorageError};
 
 /// MySQL implementation of the repository contract.
 ///
