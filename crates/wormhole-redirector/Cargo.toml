@@ -39,6 +39,7 @@ typed-builder = { workspace = true }
 
 # Serialization
 serde_json = "1.0"
+thiserror = { workspace = true }
 
 # Time
 jiff = { workspace = true }

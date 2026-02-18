@@ -13,6 +13,8 @@ prost-types = { workspace = true }
 tonic-prost = { workspace = true }
 # utils
 bs58 = { workspace = true }
+# error
+thiserror = { workspace = true }
 
 [build-dependencies]
 tonic-prost-build = { workspace = true }

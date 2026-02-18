@@ -1,36 +1,46 @@
 use std::convert::TryInto;
-use wormhole_core::ShortenerError;
+use thiserror::Error;
+use wormhole_core as core;
+use wormhole_core::base58::ShortCodeBase58;
 
 tonic::include_proto!("shortcode.v1");
 
-impl TryInto<wormhole_core::ShortCode> for &ShortCode {
-    type Error = ShortenerError;
+#[derive(Error, Debug)]
+pub enum ConversionError {
+    #[error("invalid short code kind: {0}")]
+    InvalidKind(i32),
+    #[error("short code is malformed: {0}")]
+    MalformedCode(String),
+}
 
-    fn try_into(self) -> Result<wormhole_core::ShortCode, Self::Error> {
-        let kind = ShortCodeKind::try_from(self.kind).map_err(|e| {
-            ShortenerError::InvalidShortCode(format!("invalid short code kind: {}", e))
-        })?;
+impl TryInto<core::ShortCode> for &ShortCode {
+    type Error = ConversionError;
+
+    fn try_into(self) -> Result<core::ShortCode, Self::Error> {
+        let kind = ShortCodeKind::try_from(self.kind)
+            .map_err(|_| ConversionError::InvalidKind(self.kind))?;
 
         match kind {
             ShortCodeKind::Generated => {
                 // We decode then re-encode to preserve the generated variant while
                 // ensuring the wire value is valid base58.
                 let decoded = bs58::decode(self.code.as_str()).into_vec().map_err(|e| {
-                    ShortenerError::InvalidShortCode(format!("invalid base58 short code: {}", e))
+                    ConversionError::MalformedCode(format!(
+                        "failed to decode base58 short code: {e}"
+                    ))
                 })?;
-                Ok(wormhole_core::ShortCode::generated(
-                    wormhole_core::base58::ShortCodeBase58::new(decoded),
-                ))
+                Ok(core::ShortCode::generated(ShortCodeBase58::new(decoded)))
             }
-            ShortCodeKind::Custom => wormhole_core::ShortCode::new(self.code.as_str()),
+            ShortCodeKind::Custom => core::ShortCode::new(self.code.as_str())
+                .map_err(|_| ConversionError::MalformedCode(self.code.clone())),
         }
     }
 }
 
-impl TryInto<wormhole_core::ShortCode> for ShortCode {
-    type Error = ShortenerError;
+impl TryInto<core::ShortCode> for ShortCode {
+    type Error = ConversionError;
 
-    fn try_into(self) -> Result<wormhole_core::ShortCode, Self::Error> {
+    fn try_into(self) -> Result<core::ShortCode, Self::Error> {
         (&self).try_into()
     }
 }
@@ -38,6 +48,7 @@ impl TryInto<wormhole_core::ShortCode> for ShortCode {
 #[cfg(test)]
 mod tests {
     use crate::v1::{ShortCode, ShortCodeKind};
+    use wormhole_core as core;
 
     #[test]
     fn test_short_code_try_into() {
@@ -46,10 +57,9 @@ mod tests {
             kind: ShortCodeKind::Generated as i32,
         };
 
-        let result: wormhole_core::ShortCode =
-            shortcode.try_into().expect("Failed to convert ShortCode");
+        let result: core::ShortCode = shortcode.try_into().expect("Failed to convert ShortCode");
 
-        assert!(matches!(result, wormhole_core::ShortCode::Generated(_)));
+        assert!(matches!(result, core::ShortCode::Generated(_)));
     }
 
     #[test]
@@ -59,7 +69,7 @@ mod tests {
             kind: ShortCodeKind::Generated as i32,
         };
 
-        let result: Result<wormhole_core::ShortCode, _> = shortcode.try_into();
+        let result: Result<core::ShortCode, _> = shortcode.try_into();
         assert!(result.is_err());
     }
 }

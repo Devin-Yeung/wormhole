@@ -1,10 +1,11 @@
 use proto::redirector_service_server::RedirectorService;
-use std::sync::Arc;
-use tonic::{Code, Request, Response, Status};
-use wormhole_core::{ReadRepository, Repository, ShortCode, StorageError, UrlCache, UrlRecord};
+use tonic::{Request, Response, Status};
+use wormhole_core::{ReadRepository, Repository, ShortCode, UrlCache, UrlRecord};
 use wormhole_proto_schema::v1 as proto;
 
 use wormhole_redirector::CachedRepository;
+
+use crate::error::RedirectorError;
 
 pub struct RedirectorGrpcServer<R: Repository, C: UrlCache> {
     storage: CachedRepository<R, C>,
@@ -15,19 +16,14 @@ struct ResolveRequest {
 }
 
 impl TryFrom<proto::ResolveRequest> for ResolveRequest {
-    type Error = Status;
+    type Error = RedirectorError;
 
     fn try_from(value: proto::ResolveRequest) -> Result<Self, Self::Error> {
-        let shortcode: ShortCode = value
+        let shortcode = value
             .short_code
             // always require a shortcode
-            .ok_or(Status::new(Code::InvalidArgument, "short code is required"))?
-            .try_into()
-            .map_err(|e| {
-                let mut status = Status::new(Code::InvalidArgument, "short code is malformed");
-                status.set_source(Arc::new(e));
-                status
-            })?;
+            .ok_or(RedirectorError::ShortCodeRequired)?;
+        let shortcode: ShortCode = shortcode.try_into()?;
 
         let req = ResolveRequest {
             short_code: shortcode,
@@ -42,7 +38,7 @@ struct ResolveResponse {
 }
 
 impl TryInto<proto::ResolveResponse> for ResolveResponse {
-    type Error = Status;
+    type Error = RedirectorError;
 
     fn try_into(self) -> Result<proto::ResolveResponse, Self::Error> {
         let UrlRecord {
@@ -54,7 +50,7 @@ impl TryInto<proto::ResolveResponse> for ResolveResponse {
         // leak expired records through gRPC responses.
         let expire_at = match expire_at {
             Some(expire_at) if jiff::Timestamp::now() >= expire_at => {
-                return Err(Status::new(Code::NotFound, "short code not found"));
+                return Err(RedirectorError::ShortCodeNotFound);
             }
             Some(expire_at) => {
                 let mut ts = prost_types::Timestamp::default();
@@ -85,36 +81,19 @@ impl<R: Repository, C: UrlCache> RedirectorService for RedirectorGrpcServer<R, C
             .storage
             .get(&req.short_code)
             .await
-            .map_err(storage_error_to_status)?
-            .ok_or(Status::new(Code::NotFound, "short code not found"))?;
+            .map_err(RedirectorError::from)?
+            .ok_or(RedirectorError::ShortCodeNotFound)?;
 
         let resp: proto::ResolveResponse = ResolveResponse { url_record: record }.try_into()?;
 
         Ok(Response::new(resp))
     }
 }
-
-fn storage_error_to_status(error: StorageError) -> Status {
-    let (code, message) = match &error {
-        StorageError::Unavailable(_) | StorageError::Cache(_) => {
-            (Code::Unavailable, "backend is unavailable")
-        }
-        StorageError::Timeout(_) => (Code::DeadlineExceeded, "backend timed out"),
-        StorageError::Conflict(_) | StorageError::Query(_) | StorageError::InvalidData(_) => {
-            (Code::Internal, "backend operation failed")
-        }
-        StorageError::Operation(_) => (Code::Internal, "backend operation failed"),
-    };
-
-    let mut status = Status::new(code, message);
-    status.set_source(Arc::new(error));
-    status
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
     use jiff::{SignedDuration, Timestamp};
+    use tonic::Code;
 
     fn resolve_response(expire_at: Option<Timestamp>) -> ResolveResponse {
         ResolveResponse {
@@ -155,9 +134,11 @@ mod tests {
     fn resolve_response_try_into_rejects_expired_records() {
         let expire_at = Timestamp::now() - SignedDuration::from_secs(1);
 
-        let result: Result<proto::ResolveResponse, Status> =
+        let result: Result<proto::ResolveResponse, RedirectorError> =
             resolve_response(Some(expire_at)).try_into();
-        let status = result.expect_err("expired record should be rejected");
+        let status: Status = result
+            .expect_err("expired record should be rejected")
+            .into();
 
         assert_eq!(status.code(), Code::NotFound);
         assert_eq!(status.message(), "short code not found");
