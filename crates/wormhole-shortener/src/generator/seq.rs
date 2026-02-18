@@ -3,11 +3,11 @@ use wormhole_core::ShortCode;
 
 /// A globally unique short code generator using sequential counters.
 ///
-/// This generator produces sequential codes like "seq000", "seq001", etc.
+/// This generator produces sequential codes like "seq0", "seq1", etc.
 /// It guarantees global uniqueness within a single instance (no database queries needed).
 ///
 /// For distributed deployments, each node should use a unique prefix
-/// (e.g., "node-a-000", "node-b-000") to ensure global uniqueness.
+/// (e.g., "node-a0", "node-b0") to ensure global uniqueness.
 #[derive(Debug)]
 pub struct UniqueGenerator {
     counter: std::sync::atomic::AtomicU64,
@@ -50,12 +50,13 @@ impl UniqueGenerator {
 }
 
 impl Generator for UniqueGenerator {
-    fn generate(&self) -> ShortCode {
+    type Output = ShortCode;
+
+    fn generate(&self) -> Self::Output {
         let count = self
             .counter
             .fetch_add(1, std::sync::atomic::Ordering::SeqCst);
-        // Use base62 encoding for shorter, more readable codes
-        let code_str = format!("{}{:06}", self.prefix, count);
+        let code_str = format!("{}{}", self.prefix, count);
         ShortCode::new_unchecked(code_str)
     }
 }
@@ -72,9 +73,9 @@ mod tests {
         let code2 = generator.generate();
         let code3 = generator.generate();
 
-        assert_eq!(code1.as_str(), "wh000000");
-        assert_eq!(code2.as_str(), "wh000001");
-        assert_eq!(code3.as_str(), "wh000002");
+        assert_eq!(code1.as_str(), "wh0");
+        assert_eq!(code2.as_str(), "wh1");
+        assert_eq!(code3.as_str(), "wh2");
     }
 
     #[test]
@@ -84,8 +85,8 @@ mod tests {
         let code1 = generator.generate();
         let code2 = generator.generate();
 
-        assert_eq!(code1.as_str(), "node-a000000");
-        assert_eq!(code2.as_str(), "node-a000001");
+        assert_eq!(code1.as_str(), "node-a0");
+        assert_eq!(code2.as_str(), "node-a1");
     }
 
     #[test]
@@ -95,8 +96,8 @@ mod tests {
         let code1 = generator.generate();
         let code2 = generator.generate();
 
-        assert_eq!(code1.as_str(), "wh001000");
-        assert_eq!(code2.as_str(), "wh001001");
+        assert_eq!(code1.as_str(), "wh1000");
+        assert_eq!(code2.as_str(), "wh1001");
     }
 
     #[test]
@@ -114,9 +115,9 @@ mod tests {
         let cloned = generator.clone();
 
         // Original continues from 2
-        assert_eq!(generator.generate().as_str(), "wh000002");
+        assert_eq!(generator.generate().as_str(), "wh2");
 
         // Clone also continues from 2 (same counter value)
-        assert_eq!(cloned.generate().as_str(), "wh000002");
+        assert_eq!(cloned.generate().as_str(), "wh2");
     }
 }

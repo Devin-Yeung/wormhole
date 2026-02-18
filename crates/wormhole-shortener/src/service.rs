@@ -63,7 +63,7 @@ impl<R: Repository, G: Generator> ShortenerService<R, G> {
     /// Generates a short code using the configured generator.
     /// The generator is responsible for ensuring uniqueness.
     fn generate_code(&self) -> ShortCode {
-        self.generator.generate()
+        self.generator.generate().into()
     }
 }
 
@@ -162,7 +162,7 @@ mod tests {
         };
 
         let code = service.shorten(params).await.unwrap();
-        assert_eq!(code.as_str().len(), 8); // "wh" + 6 digits
+        assert_eq!(code.as_str().len(), 3); // "wh" + counter starting at 0
     }
 
     #[tokio::test]
@@ -293,7 +293,7 @@ mod tests {
         let code1 = service.shorten(params.clone()).await.unwrap();
         let code2 = service.shorten(params.clone()).await.unwrap();
 
-        assert_eq!(code1.as_str(), "wh000000");
-        assert_eq!(code2.as_str(), "wh000001");
+        assert_eq!(code1.as_str(), "wh0");
+        assert_eq!(code2.as_str(), "wh1");
     }
 }

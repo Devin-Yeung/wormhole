@@ -9,8 +9,9 @@ use wormhole_core::ShortCode;
 /// Implementations can vary from simple random generators to
 /// distributed ID generators (e.g., Snowflake, UUID, etc.)
 pub trait Generator: Send + Sync + 'static {
-    /// Generates a short code.
+    type Output: Into<ShortCode>;
+    /// Generates a type that can be converted into a globally unique short code.
     ///
     /// The generated code should be unique
-    fn generate(&self) -> ShortCode;
+    fn generate(&self) -> Self::Output;
 }
