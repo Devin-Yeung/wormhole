@@ -3,13 +3,13 @@ use tonic::{Request, Response, Status};
 use wormhole_cache::UrlCache;
 use wormhole_core::{ShortCode, UrlRecord};
 use wormhole_proto_schema::v1 as proto;
-use wormhole_storage::{ReadRepository, Repository};
+use wormhole_storage::ReadRepository;
 
 use wormhole_redirector::CachedRepository;
 
 use crate::error::RedirectorError;
 
-pub struct RedirectorGrpcServer<R: Repository, C: UrlCache> {
+pub struct RedirectorGrpcServer<R: ReadRepository, C: UrlCache> {
     storage: CachedRepository<R, C>,
 }
 
@@ -72,7 +72,7 @@ impl TryInto<proto::ResolveResponse> for ResolveResponse {
 }
 
 #[tonic::async_trait]
-impl<R: Repository, C: UrlCache> RedirectorService for RedirectorGrpcServer<R, C> {
+impl<R: ReadRepository, C: UrlCache> RedirectorService for RedirectorGrpcServer<R, C> {
     async fn resolve(
         &self,
         request: Request<proto::ResolveRequest>,
