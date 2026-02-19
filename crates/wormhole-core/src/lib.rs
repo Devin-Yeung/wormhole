@@ -6,7 +6,6 @@
 pub mod base58;
 pub mod error;
 pub mod shortcode;
-pub mod slim_id;
 
 pub use error::{CacheError, CoreError};
 pub use shortcode::{ShortCode, UrlRecord};

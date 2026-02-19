@@ -1,6 +1,7 @@
 use serde::{Deserialize, Serialize};
 use smol_str::SmolStr;
 use std::fmt::Display;
+use wormhole_tinyflake::TinyId;
 
 /// A short code encoded as base58 string.
 #[derive(Clone, PartialEq, Eq, Hash)]
@@ -67,18 +68,11 @@ impl<'de> Deserialize<'de> for ShortCodeBase58 {
     }
 }
 
-#[cfg(test)]
-mod tests {
-    use crate::base58::ShortCodeBase58;
-    use crate::slim_id::SlimId;
-
-    #[test]
-    fn slim_id_to_base58() {
-        let slim_id = SlimId::new()
-            .with_timestamp(1)
-            .with_sequence(2)
-            .with_node_id(3);
-        let base58 = ShortCodeBase58::new(slim_id.into_bytes());
-        assert_eq!(base58.as_str(), "7YXzwZ");
+impl From<TinyId> for ShortCodeBase58 {
+    fn from(val: TinyId) -> Self {
+        let bytes = val.into_bytes();
+        ShortCodeBase58::new(bytes)
     }
 }
+
+// TODO: test the conversion when have way to create a TinyId

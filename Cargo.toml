@@ -16,6 +16,7 @@ wormhole-gateway = { path = "crates/wormhole-gateway" }
 wormhole-shortener = { path = "crates/wormhole-shortener" }
 wormhole-redirector = { path = "crates/wormhole-redirector" }
 wormhole-storage = { path = "crates/wormhole-storage" }
+wormhole-tinyflake = { path = "crates/wormhole-tinyflake" }
 wormhole-test-infra = { path = "crates/wormhole-test-infra" }
 
 # async runtime

@@ -116,7 +116,6 @@ impl Display for ShortCode {
 mod tests {
     use super::*;
     use crate::error::CoreError;
-    use crate::slim_id::SlimId;
 
     #[test]
     fn valid_codes() {
@@ -148,17 +147,6 @@ mod tests {
     fn display_custom() {
         let code = ShortCode::new("my-code").unwrap();
         assert_eq!(code.to_string(), "my-code");
-    }
-
-    #[test]
-    fn display_generated() {
-        let slim_id = SlimId::new()
-            .with_timestamp(12345)
-            .with_sequence(1)
-            .with_node_id(0);
-        let code = ShortCode::generated(slim_id);
-        // ShortCodeBase58 uses base58 encoding
-        assert!(!code.to_string().is_empty());
     }
 
     #[test]
