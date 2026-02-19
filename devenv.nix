@@ -14,6 +14,8 @@
     cargo-deny
     cargo-machete
     cargo-nextest
+    cargo-modules
+    grpcurl
     protobuf
     iredis
     mycli
