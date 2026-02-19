@@ -4,15 +4,26 @@ version.workspace = true
 edition.workspace = true
 license.workspace = true
 
+[[bin]]
+name = "wormhole-shortener-grpc-server"
+path = "bin/grpc/main.rs"
+
 [dependencies]
 # Workspace members
 wormhole-core = { workspace = true }
+wormhole-proto-schema = { workspace = true }
 wormhole-storage = { workspace = true }
 # Async
 async-trait = { workspace = true }
 tokio = { workspace = true }
+clap = { version = "4.5.31", features = ["derive", "env"] }
 # Time
 jiff = { workspace = true }
+# gRPC
+tonic = { workspace = true }
+# Tracing
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
 
 # Error handling
 thiserror = { workspace = true }
