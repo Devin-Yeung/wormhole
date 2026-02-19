@@ -1,10 +1,10 @@
 use crate::generator::Generator;
+use crate::shortener::{ExpirationPolicy, ShortenParams, Shortener};
+use crate::ShortenerError;
 use async_trait::async_trait;
 use jiff::Timestamp;
 use std::sync::Arc;
-use wormhole_core::{
-    ExpirationPolicy, ShortCode, ShortenParams, Shortener, ShortenerError, UrlRecord,
-};
+use wormhole_core::{ShortCode, UrlRecord};
 use wormhole_storage::{Repository, StorageError};
 
 /// A concrete implementation of the `Shortener` trait.

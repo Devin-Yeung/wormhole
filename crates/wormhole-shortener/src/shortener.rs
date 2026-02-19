@@ -1,10 +1,10 @@
-use crate::shortcode::ShortCode;
-use crate::UrlRecord;
+use crate::error::ShortenerError;
 use async_trait::async_trait;
 use jiff::Timestamp;
 use std::time::Duration;
+use wormhole_core::{ShortCode, UrlRecord};
 
-pub type Result<T> = std::result::Result<T, crate::error::ShortenerError>;
+pub type Result<T> = std::result::Result<T, ShortenerError>;
 
 /// Expiration policy for a shortened URL.
 #[derive(Debug, Clone)]

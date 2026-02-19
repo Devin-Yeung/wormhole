@@ -1,5 +1,8 @@
 use thiserror::Error;
 
+/// Errors related to the core functionality of the URL shortener service.
+pub type Result<T> = std::result::Result<T, CoreError>;
+
 #[derive(Debug, Clone, Error)]
 pub enum CacheError {
     #[error("cache backend unavailable: {0}")]
@@ -17,13 +20,7 @@ pub enum CacheError {
 }
 
 #[derive(Debug, Clone, Error)]
-pub enum ShortenerError {
-    #[error("alias already exists: {0}")]
-    AliasConflict(String),
-    #[error("invalid url: {0}")]
-    InvalidUrl(String),
+pub enum CoreError {
     #[error("invalid short code: {0}")]
     InvalidShortCode(String),
-    #[error("storage error: {0}")]
-    Storage(String),
 }

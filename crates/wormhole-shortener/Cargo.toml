@@ -13,3 +13,6 @@ async-trait = { workspace = true }
 tokio = { workspace = true }
 # Time
 jiff = { workspace = true }
+
+# Error handling
+thiserror = { workspace = true }

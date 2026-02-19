@@ -6,9 +6,7 @@
 pub mod base58;
 pub mod error;
 pub mod shortcode;
-pub mod shortener;
 pub mod slim_id;
 
-pub use error::{CacheError, ShortenerError};
+pub use error::{CacheError, CoreError};
 pub use shortcode::{ShortCode, UrlRecord};
-pub use shortener::{ExpirationPolicy, ShortenParams, Shortener};

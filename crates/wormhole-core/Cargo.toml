@@ -15,9 +15,6 @@ jiff = { workspace = true }
 # Error handling
 thiserror = { workspace = true }
 
-# Async trait
-async-trait = { workspace = true }
-
 # utils
 modular-bitfield = { version = "0.13.1" }
 bs58 = { workspace = true }

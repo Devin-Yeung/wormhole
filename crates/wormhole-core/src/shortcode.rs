@@ -1,5 +1,5 @@
 use crate::base58::ShortCodeBase58;
-use crate::error::ShortenerError;
+use crate::error::CoreError;
 use jiff::Timestamp;
 use serde::{Deserialize, Serialize};
 use std::fmt::Display;
@@ -52,7 +52,7 @@ impl ShortCode {
     /// Creates a new `ShortCode` after validating the input.
     ///
     /// Valid codes are 3-32 characters and contain only `[a-zA-Z0-9_-]`.
-    pub fn new(code: impl Into<String>) -> std::result::Result<Self, ShortenerError> {
+    pub fn new(code: impl Into<String>) -> std::result::Result<Self, CoreError> {
         let code = code.into();
         Self::validate(&code)?;
         Ok(Self::Custom(code))
@@ -79,9 +79,9 @@ impl ShortCode {
         }
     }
 
-    fn validate(code: &str) -> std::result::Result<(), ShortenerError> {
+    fn validate(code: &str) -> Result<(), CoreError> {
         if code.len() < MIN_LENGTH || code.len() > MAX_LENGTH {
-            return Err(ShortenerError::InvalidShortCode(format!(
+            return Err(CoreError::InvalidShortCode(format!(
                 "length must be between {} and {}, got {}",
                 MIN_LENGTH,
                 MAX_LENGTH,
@@ -93,7 +93,7 @@ impl ShortCode {
             .chars()
             .all(|c| c.is_ascii_alphanumeric() || c == '-' || c == '_')
         {
-            return Err(ShortenerError::InvalidShortCode(format!(
+            return Err(CoreError::InvalidShortCode(format!(
                 "must contain only alphanumeric characters, hyphens, or underscores: '{}'",
                 code
             )));
@@ -115,6 +115,7 @@ impl Display for ShortCode {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::error::CoreError;
     use crate::slim_id::SlimId;
 
     #[test]
@@ -126,7 +127,8 @@ mod tests {
 
     #[test]
     fn too_short() {
-        assert!(ShortCode::new("ab").is_err());
+        let err = ShortCode::new("ab").unwrap_err();
+        assert!(matches!(err, CoreError::InvalidShortCode(_)));
         assert!(ShortCode::new("").is_err());
     }
 
