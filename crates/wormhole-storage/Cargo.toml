@@ -27,6 +27,7 @@ serde = { workspace = true, features = ["derive"] }
 
 # Error handling
 thiserror = { workspace = true }
+tonic = { workspace = true }
 
 [dev-dependencies]
 tokio = { workspace = true, features = ["full"] }

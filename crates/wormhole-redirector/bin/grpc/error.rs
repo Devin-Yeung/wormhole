@@ -1,4 +1,3 @@
-use std::sync::Arc;
 use thiserror::Error;
 use tonic::{Code, Status};
 use wormhole_proto_schema::v1::ConversionError;
@@ -38,32 +37,7 @@ impl From<RedirectorError> for Status {
             RedirectorError::ShortCodeNotFound => {
                 Status::new(Code::NotFound, "short code not found")
             }
-            RedirectorError::Storage(source) => {
-                let (code, message) = match &source {
-                    StorageError::Unavailable(_) => {
-                        (Code::Unavailable, "storage backend unavailable")
-                    }
-                    StorageError::Timeout(_) => {
-                        (Code::DeadlineExceeded, "storage operation timed out")
-                    }
-                    StorageError::Conflict(_) => (Code::AlreadyExists, "short code already exists"),
-                    StorageError::InvalidData(_)
-                    | StorageError::Query(_)
-                    | StorageError::Cache(_)
-                    | StorageError::Operation(_) => (Code::Internal, "storage operation failed"),
-                };
-
-                status_with_source(code, message, source)
-            }
+            RedirectorError::Storage(source) => source.into(),
         }
     }
-}
-
-fn status_with_source<E>(code: Code, message: &'static str, source: E) -> Status
-where
-    E: std::error::Error + Send + Sync + 'static,
-{
-    let mut status = Status::new(code, message);
-    status.set_source(Arc::new(source));
-    status
 }
