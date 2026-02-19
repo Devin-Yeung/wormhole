@@ -10,6 +10,7 @@ members = ["crates/*"]
 [workspace.dependencies]
 # workspace members
 wormhole-core = { path = "crates/wormhole-core" }
+wormhole-cache = { path = "crates/wormhole-cache" }
 wormhole-proto-schema = { path = "crates/wormhole-proto-schema" }
 wormhole-gateway = { path = "crates/wormhole-gateway" }
 wormhole-shortener = { path = "crates/wormhole-shortener" }

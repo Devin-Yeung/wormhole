@@ -31,3 +31,6 @@ devenv.local.yaml
 
 # pre-commit
 .pre-commit-config.yaml
+
+# Local git worktrees
+.worktrees/

@@ -1,6 +1,7 @@
 use async_trait::async_trait;
 use tracing::{debug, trace};
-use wormhole_core::{ShortCode, UrlCache, UrlRecord};
+use wormhole_cache::UrlCache;
+use wormhole_core::{ShortCode, UrlRecord};
 use wormhole_storage::{ReadRepository, StorageError};
 
 /// Type alias for repository results.
@@ -24,22 +25,20 @@ impl<R: ReadRepository, C: UrlCache> CachedRepository<R, C> {
     /// # Arguments
     ///
     /// * `inner` - The underlying read-only repository implementation
-    /// * `cache` - The cache implementation (e.g., [`RedisUrlCache`])
+    /// * `cache` - The cache implementation (e.g., [`MokaUrlCache`])
     ///
     /// # Example
     ///
     /// ```rust,no_run
-    /// use wormhole_redirector::{CachedRepository, RedisUrlCache};
+    /// use wormhole_cache::MokaUrlCache;
+    /// use wormhole_redirector::CachedRepository;
     /// use wormhole_storage::InMemoryRepository;
     ///
-    /// # async fn example() -> Result<(), Box<dyn std::error::Error>> {
-    /// let redis_client = redis::Client::open("redis://127.0.0.1:6379")?;
-    /// let redis_conn = redis_client.get_multiplexed_async_connection().await?;
-    ///
+    /// # fn example() {
     /// let inner_repo = InMemoryRepository::new();
-    /// let cache = RedisUrlCache::new(redis_conn);
+    /// let cache = MokaUrlCache::new();
     /// let cached_repo = CachedRepository::new(inner_repo, cache);
-    /// # Ok(())
+    /// let _ = cached_repo;
     /// # }
     /// ```
     pub fn new(inner: R, cache: C) -> Self {
@@ -116,7 +115,7 @@ impl<R: ReadRepository, C: UrlCache> ReadRepository for CachedRepository<R, C> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::cache::MokaUrlCache;
+    use wormhole_cache::MokaUrlCache;
     use wormhole_storage::{InMemoryRepository, Repository};
 
     fn code(s: &str) -> ShortCode {

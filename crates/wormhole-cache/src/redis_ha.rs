@@ -1,7 +1,9 @@
 use async_trait::async_trait;
 use deadpool_redis::redis::AsyncCommands;
 use tracing::{debug, trace, warn};
-use wormhole_core::{CacheError, ShortCode, UrlCache, UrlRecord};
+use wormhole_core::{CacheError, ShortCode, UrlRecord};
+
+use crate::UrlCache;
 
 /// Type alias for cache results.
 pub type Result<T> = std::result::Result<T, CacheError>;
@@ -193,7 +195,7 @@ impl UrlCache for RedisHAUrlCache {
 
 #[cfg(test)]
 mod tests {
-    use crate::cache::RedisHAUrlCache;
+    use crate::RedisHAUrlCache;
     use wormhole_test_infra::redis::{RedisHA, RedisHAConfig};
 
     #[tokio::test]

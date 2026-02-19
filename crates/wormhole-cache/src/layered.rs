@@ -1,7 +1,9 @@
 use async_trait::async_trait;
 use std::future::Future;
 use tracing::{debug, trace};
-use wormhole_core::{CacheError, ShortCode, UrlCache, UrlRecord};
+use wormhole_core::{CacheError, ShortCode, UrlRecord};
+
+use crate::UrlCache;
 
 /// Type alias for cache results.
 pub type Result<T> = std::result::Result<T, CacheError>;
@@ -27,7 +29,7 @@ pub type Result<T> = std::result::Result<T, CacheError>;
 /// # Example
 ///
 /// ```rust
-/// use wormhole_redirector::cache::{LayeredCache, MokaUrlCache};
+/// use wormhole_cache::{LayeredCache, MokaUrlCache};
 ///
 /// // Create L1 cache (in-memory)
 /// let l1 = MokaUrlCache::with_capacity(10_000);
@@ -186,7 +188,7 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::cache::MokaUrlCache;
+    use crate::MokaUrlCache;
     use jiff::Timestamp;
 
     fn test_record(url: &str) -> UrlRecord {

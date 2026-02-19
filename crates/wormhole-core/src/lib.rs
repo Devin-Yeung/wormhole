@@ -4,13 +4,11 @@
 //! shortener service and the redirector service.
 
 pub mod base58;
-pub mod cache;
 pub mod error;
 pub mod shortcode;
 pub mod shortener;
 pub mod slim_id;
 
-pub use cache::UrlCache;
 pub use error::{CacheError, ShortenerError};
 pub use shortcode::{ShortCode, UrlRecord};
 pub use shortener::{ExpirationPolicy, ShortenParams, Shortener};

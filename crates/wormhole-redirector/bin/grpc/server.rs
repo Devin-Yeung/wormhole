@@ -1,6 +1,7 @@
 use proto::redirector_service_server::RedirectorService;
 use tonic::{Request, Response, Status};
-use wormhole_core::{ShortCode, UrlCache, UrlRecord};
+use wormhole_cache::UrlCache;
+use wormhole_core::{ShortCode, UrlRecord};
 use wormhole_proto_schema::v1 as proto;
 use wormhole_storage::{ReadRepository, Repository};
 

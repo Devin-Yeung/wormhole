@@ -1,7 +1,7 @@
 use std::time::Duration;
 
-use wormhole_core::{CacheError, ShortCode, UrlCache, UrlRecord};
-use wormhole_redirector::cache::RedisHAUrlCache;
+use wormhole_cache::{RedisHAUrlCache, UrlCache};
+use wormhole_core::{CacheError, ShortCode, UrlRecord};
 use wormhole_test_infra::redis::{RedisHA, RedisHAConfig};
 
 /// Test fixture that manages a Redis HA environment using test-infra.

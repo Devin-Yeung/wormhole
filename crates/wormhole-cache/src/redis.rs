@@ -1,7 +1,9 @@
 use async_trait::async_trait;
 use redis::AsyncCommands;
 use tracing::{debug, trace, warn};
-use wormhole_core::{CacheError, ShortCode, UrlCache, UrlRecord};
+use wormhole_core::{CacheError, ShortCode, UrlRecord};
+
+use crate::UrlCache;
 
 /// Type alias for cache results.
 pub type Result<T> = std::result::Result<T, CacheError>;

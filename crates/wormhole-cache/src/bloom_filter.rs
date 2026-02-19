@@ -25,7 +25,9 @@
 use async_trait::async_trait;
 use parking_lot::RwLock;
 use typed_builder::TypedBuilder;
-use wormhole_core::{cache::Result, CacheError, ShortCode, UrlCache, UrlRecord};
+use wormhole_core::{CacheError, ShortCode, UrlRecord};
+
+use crate::{Result, UrlCache};
 
 /// Configuration for the Bloom filter.
 ///
@@ -61,8 +63,7 @@ pub struct BloomFilterConfig {
 /// # Example
 ///
 /// ```rust,ignore
-/// use wormhole_redirector::cache::{BloomFilter, BloomFilterConfig};
-/// use wormhole_core::UrlCache;
+/// use wormhole_cache::{BloomFilter, BloomFilterConfig, UrlCache};
 ///
 /// let config = BloomFilterConfig::builder()
 ///     .expected_items(1_000_000)

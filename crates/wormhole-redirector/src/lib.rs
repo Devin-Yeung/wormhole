@@ -6,8 +6,9 @@
 //!
 //! # Example with Redis
 //!
-//! ```rust,no_run
-//! use wormhole_redirector::{RedirectorService, RedisUrlCache, CachedRepository};
+//! ```rust,ignore
+//! use wormhole_cache::RedisUrlCache;
+//! use wormhole_redirector::{CachedRepository, RedirectorService};
 //! use wormhole_storage::InMemoryRepository;
 //! use wormhole_core::ShortCode;
 //!
@@ -36,7 +37,8 @@
 //! # Example with Moka (in-memory)
 //!
 //! ```rust
-//! use wormhole_redirector::{RedirectorService, MokaUrlCache, CachedRepository};
+//! use wormhole_cache::MokaUrlCache;
+//! use wormhole_redirector::{CachedRepository, RedirectorService};
 //! use wormhole_storage::InMemoryRepository;
 //! use wormhole_core::ShortCode;
 //!
@@ -58,10 +60,8 @@
 //! # }
 //! ```
 
-pub mod cache;
 pub mod repository;
 pub mod service;
 
-pub use cache::{MokaUrlCache, RedisUrlCache};
 pub use repository::CachedRepository;
 pub use service::RedirectorService;
