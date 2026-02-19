@@ -49,38 +49,55 @@ cargo machete
 cargo deny check
 ```
 
+## Running Services
+
+```bash
+# Run the gateway HTTP server
+cargo run -p wormhole-gateway
+
+# Run with custom configuration (if supported)
+RUST_LOG=debug cargo run -p wormhole-gateway
+```
+
 ## Development Commands
 
 The project includes a `justfile` for common development tasks:
 
 ```bash
-# Start development infrastructure (Redis with Sentinel)
+# Start development infrastructure (Redis with Sentinel, MySQL)
 just dev-up
 
-# View logs from Redis containers
+# View logs from infrastructure containers
 just logs
 ```
+
+Infrastructure Docker Compose files are in `infra/dev/`:
+- `redis/docker-compose.yml`: Redis with Sentinel for HA
+- `mysql/docker-compose.yml`: MySQL database
+- `docker-compose.yml`: Combined development setup
 
 ## Architecture
 
 ### Workspace Structure
 
-The project is organized as a Cargo workspace with seven crates:
+The project is organized as a Cargo workspace with eight crates:
 
 - **`wormhole-core`**: Core types and traits shared across the workspace
+- **`wormhole-cache`**: Caching abstractions and implementations (Moka, Redis, layered)
 - **`wormhole-storage`**: Storage implementations (in-memory repository)
 - **`wormhole-shortener`**: Service implementation and code generators
 - **`wormhole-proto-schema`**: gRPC protocol buffer definitions and generated code
 - **`wormhole-gateway`**: HTTP API server (Axum) - the entry point for clients
-- **`wormhole-redirector`**: Redirect handling with caching support (Redis, Moka)
+- **`wormhole-redirector`**: Redirect handling with caching support
 - **`wormhole-test-infra`**: Test infrastructure for Redis HA setups
 
 ### Crate Dependencies
 
 - `wormhole-core` has no internal dependencies and provides the foundation
+- `wormhole-cache` provides caching abstractions (Moka, Redis, Bloom filter)
 - `wormhole-storage` depends on `wormhole-core`
 - `wormhole-shortener` depends on `wormhole-core` and `wormhole-proto-schema`
-- `wormhole-redirector` depends on `wormhole-core` and `wormhole-storage`
+- `wormhole-redirector` depends on `wormhole-core`, `wormhole-storage`, and `wormhole-cache`
 - `wormhole-gateway` depends on `wormhole-shortener` and `wormhole-proto-schema`
 - `wormhole-test-infra` provides Redis test fixtures
 
@@ -142,17 +159,22 @@ This crate defines the shared domain model:
    - Sequential counter with configurable prefix
    - Pure generator (no storage interaction)
 
+### Cache Crate (in `wormhole-cache`)
+
+Provides caching abstractions and implementations:
+
+- **`UrlCache`** trait (`cache.rs`): Core caching interface with `get_or_compute()`
+- **`MokaUrlCache`**: In-memory cache using Moka (LRU eviction)
+- **`RedisUrlCache`**: Redis-based cache with JSON serialization
+- **`RedisHAUrlCache`**: High-availability Redis with Sentinel support
+- **`LayeredCache`**: Multi-tier caching (e.g., local + remote)
+- **`BloomFilter`**: Bloom filter for negative caching
+
 ### Redirector Service (in `wormhole-redirector`)
 
 **`RedirectorService<R>`** (`service.rs`): Resolves short codes to URLs
 - Uses `ReadRepository` for read-only access
 - Handles expiration checks
-
-**Cache Implementations** (`cache/`):
-- **`MokaUrlCache`**: In-memory cache using Moka (LRU eviction)
-- **`RedisUrlCache`**: Redis-based cache with JSON serialization
-- **`RedisHAUrlCache`**: High-availability Redis with Sentinel support
-- **`LayeredCache`**: Multi-tier caching (e.g., local + remote)
 
 **`CachedRepository<R, C>`** (`repository/cached.rs`): Decorator pattern
 - Wraps any `ReadRepository` with a `UrlCache`
@@ -173,11 +195,12 @@ Current service definition:
 - **Time**: `jiff` crate for timestamp handling (not `chrono`)
 - **Concurrency**: `DashMap` for concurrent in-memory storage
 - **Async**: `tokio` runtime with `async-trait` for trait async methods
-- **Error handling**: `thiserror` for defining error enums
+- **Error handling**: `thiserror` for defining error enums, `anyhow` for context
 - **Serialization**: `serde` for serialization
 - **gRPC**: `tonic` (server/client), `prost` (protobuf)
 - **IDs**: `modular_bitfield` for `SlimId`, `bs58` for base58 encoding
 - **Caching**: `moka` for in-memory caching, `redis` crate for Redis
+- **Database**: `sqlx` with MySQL for persistence
 
 ## Testing Patterns
 
