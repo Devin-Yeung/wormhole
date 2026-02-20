@@ -8,6 +8,8 @@ license.workspace = true
 # workspace members
 wormhole-core = { workspace = true }
 wormhole-tinyflake = { workspace = true }
+# utils
+typed-builder = { workspace = true }
 
 [dev-dependencies]
 jiff = { workspace = true }

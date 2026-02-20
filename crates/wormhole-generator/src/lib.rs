@@ -1,3 +1,4 @@
+pub mod obfuscated;
 pub mod seq;
 
 use wormhole_core::ShortCode;
