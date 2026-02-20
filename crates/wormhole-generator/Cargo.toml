@@ -1,0 +1,9 @@
+[package]
+name = "wormhole-generator"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+# workspace members
+wormhole-core = { workspace = true }

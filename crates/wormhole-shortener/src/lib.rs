@@ -4,7 +4,6 @@
 //! code generator trait. Core types are re-exported from `wormhole_core`.
 
 pub mod error;
-pub mod generator;
 pub mod service;
 pub mod shortener;
 

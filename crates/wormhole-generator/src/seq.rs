@@ -1,4 +1,4 @@
-use crate::generator::Generator;
+use crate::Generator;
 use wormhole_core::ShortCode;
 
 /// A globally unique short code generator using sequential counters.
@@ -9,12 +9,12 @@ use wormhole_core::ShortCode;
 /// For distributed deployments, each node should use a unique prefix
 /// (e.g., "node-a0", "node-b0") to ensure global uniqueness.
 #[derive(Debug)]
-pub struct UniqueGenerator {
+pub struct SeqGenerator {
     counter: std::sync::atomic::AtomicU64,
     prefix: String,
 }
 
-impl Clone for UniqueGenerator {
+impl Clone for SeqGenerator {
     fn clone(&self) -> Self {
         Self {
             counter: std::sync::atomic::AtomicU64::new(
@@ -25,7 +25,7 @@ impl Clone for UniqueGenerator {
     }
 }
 
-impl UniqueGenerator {
+impl SeqGenerator {
     /// Creates a new unique generator with a custom prefix.
     ///
     /// For distributed deployments, use unique prefixes per node
@@ -49,7 +49,7 @@ impl UniqueGenerator {
     }
 }
 
-impl Generator for UniqueGenerator {
+impl Generator for SeqGenerator {
     type Output = ShortCode;
 
     fn generate(&self) -> Self::Output {
@@ -67,7 +67,7 @@ mod tests {
 
     #[test]
     fn unique_generator_produces_sequential_codes() {
-        let generator = UniqueGenerator::with_prefix("wh");
+        let generator = SeqGenerator::with_prefix("wh");
 
         let code1 = generator.generate();
         let code2 = generator.generate();
@@ -80,7 +80,7 @@ mod tests {
 
     #[test]
     fn unique_generator_with_prefix() {
-        let generator = UniqueGenerator::with_prefix("node-a");
+        let generator = SeqGenerator::with_prefix("node-a");
 
         let code1 = generator.generate();
         let code2 = generator.generate();
@@ -91,7 +91,7 @@ mod tests {
 
     #[test]
     fn unique_generator_with_offset() {
-        let generator = UniqueGenerator::with_offset("wh", 1000);
+        let generator = SeqGenerator::with_offset("wh", 1000);
 
         let code1 = generator.generate();
         let code2 = generator.generate();
@@ -103,12 +103,12 @@ mod tests {
     #[test]
     fn generator_is_send_sync() {
         fn assert_send_sync<T: Send + Sync>() {}
-        assert_send_sync::<UniqueGenerator>();
+        assert_send_sync::<SeqGenerator>();
     }
 
     #[test]
     fn clone_preserves_counter_state() {
-        let generator = UniqueGenerator::with_prefix("wh");
+        let generator = SeqGenerator::with_prefix("wh");
         generator.generate();
         generator.generate();
 

@@ -11,6 +11,7 @@ path = "bin/grpc/main.rs"
 [dependencies]
 # Workspace members
 wormhole-core = { workspace = true }
+wormhole-generator = { workspace = true }
 wormhole-proto-schema = { workspace = true }
 wormhole-storage = { workspace = true }
 # Async

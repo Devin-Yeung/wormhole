@@ -6,8 +6,8 @@ use crate::server::ShortenerGrpcServer;
 use clap::Parser;
 use tonic::transport::Server;
 use tracing::info;
+use wormhole_generator::seq::SeqGenerator;
 use wormhole_proto_schema::v1::shortener_service_server::ShortenerServiceServer;
-use wormhole_shortener::generator::seq::UniqueGenerator;
 use wormhole_storage::{InMemoryRepository, MySqlRepository, Repository};
 
 #[tokio::main]
@@ -28,7 +28,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             run_server(
                 config.listen_addr,
                 InMemoryRepository::new(),
-                UniqueGenerator::with_prefix(config.generator_prefix),
+                SeqGenerator::with_prefix(config.generator_prefix),
             )
             .await?;
         }
@@ -40,7 +40,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             run_server(
                 config.listen_addr,
                 repository,
-                UniqueGenerator::with_prefix(config.generator_prefix),
+                SeqGenerator::with_prefix(config.generator_prefix),
             )
             .await?;
         }
@@ -52,7 +52,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 async fn run_server<R: Repository>(
     listen_addr: std::net::SocketAddr,
     repository: R,
-    generator: UniqueGenerator,
+    generator: SeqGenerator,
 ) -> Result<(), tonic::transport::Error> {
     let service = ShortenerGrpcServer::new(repository, generator);
 
