@@ -6,3 +6,6 @@ license.workspace = true
 
 [dependencies]
 modular-bitfield = { version = "0.13.1" }
+thiserror = { workspace = true }
+typed-builder = { workspace = true }
+jiff = { workspace = true }
