@@ -7,3 +7,7 @@ license.workspace = true
 [dependencies]
 # workspace members
 wormhole-core = { workspace = true }
+wormhole-tinyflake = { workspace = true }
+
+[dev-dependencies]
+jiff = { workspace = true }
