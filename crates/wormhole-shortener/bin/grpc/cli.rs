@@ -3,12 +3,10 @@ use std::fmt::{Display, Formatter};
 use std::net::SocketAddr;
 
 pub const LISTEN_ADDR_ENV: &str = "WORMHOLE_SHORTENER_GRPC_LISTEN_ADDR";
-pub const GENERATOR_PREFIX_ENV: &str = "WORMHOLE_SHORTENER_GENERATOR_PREFIX";
 pub const STORAGE_BACKEND_ENV: &str = "WORMHOLE_SHORTENER_STORAGE_BACKEND";
 pub const MYSQL_DSN_ENV: &str = "WORMHOLE_SHORTENER_MYSQL_DSN";
-
+pub const GENERATOR_NODE_ID: &str = "WORMHOLE_SHORTENER_GENERATOR_NODE_ID";
 pub const DEFAULT_LISTEN_ADDR: &str = "127.0.0.1:50051";
-pub const DEFAULT_GENERATOR_PREFIX: &str = "wh";
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, ValueEnum)]
 pub enum StorageBackendArg {
@@ -33,12 +31,8 @@ pub struct CLI {
     #[arg(long, env = LISTEN_ADDR_ENV, default_value = DEFAULT_LISTEN_ADDR)]
     pub listen_addr: SocketAddr,
 
-    #[arg(
-        long,
-        env = GENERATOR_PREFIX_ENV,
-        default_value = DEFAULT_GENERATOR_PREFIX,
-    )]
-    pub generator_prefix: String,
+    #[arg(long, env = GENERATOR_NODE_ID)]
+    pub node_id: u8,
 
     #[arg(
         long,

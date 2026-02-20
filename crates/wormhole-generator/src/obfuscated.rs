@@ -1,6 +1,8 @@
+use crate::Generator;
 use typed_builder::TypedBuilder;
 use wormhole_core::base58::ShortCodeBase58;
-use wormhole_tinyflake::TinyId;
+use wormhole_core::ShortCode;
+use wormhole_tinyflake::{Clock, SystemClock, TinyId, Tinyflake, TinyflakeSettings};
 
 const LOWER_40_BITS_MASK: u64 = (1_u64 << 40) - 1;
 
@@ -49,6 +51,41 @@ pub struct ObfuscatedTinyID {
 impl Into<ShortCodeBase58> for ObfuscatedTinyID {
     fn into(self) -> ShortCodeBase58 {
         ShortCodeBase58::new(self.inner)
+    }
+}
+
+impl Into<ShortCode> for ObfuscatedTinyID {
+    fn into(self) -> ShortCode {
+        ShortCode::Generated(self.into())
+    }
+}
+
+pub struct ObfuscatedTinyFlake<C: Clock> {
+    inner: Tinyflake<C>,
+    obfuscator: Obfuscator,
+}
+
+impl ObfuscatedTinyFlake<SystemClock> {
+    pub fn new(settings: TinyflakeSettings, obfuscator: Obfuscator) -> Self {
+        Self {
+            inner: Tinyflake::new(settings).unwrap(),
+            obfuscator,
+        }
+    }
+}
+
+impl<C: Clock> ObfuscatedTinyFlake<C> {
+    pub fn next_obfuscated_id(&self) -> ObfuscatedTinyID {
+        let id = self.inner.next_id().unwrap(); // TODO: safe unwrap?
+        self.obfuscator.obfuscate(id)
+    }
+}
+
+impl<C: Clock + 'static> Generator for ObfuscatedTinyFlake<C> {
+    type Output = ObfuscatedTinyID;
+
+    fn generate(&self) -> Self::Output {
+        self.next_obfuscated_id()
     }
 }
 
