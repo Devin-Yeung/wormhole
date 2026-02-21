@@ -17,7 +17,7 @@ use wormhole_tinyflake::TinyflakeSettings;
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     tracing_subscriber::fmt::init();
 
-    let config = CLI::try_parse()?;
+    let config = CLI::parse();
 
     info!(
         listen_addr = %config.listen_addr,
