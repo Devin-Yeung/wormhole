@@ -2,7 +2,7 @@ use crate::error::ShortenerError;
 use async_trait::async_trait;
 use jiff::Timestamp;
 use std::time::Duration;
-use wormhole_core::{ShortCode, UrlRecord};
+use wormhole_core::ShortCode;
 
 pub type Result<T> = std::result::Result<T, ShortenerError>;
 
@@ -32,10 +32,6 @@ pub struct ShortenParams {
 pub trait Shortener: Send + Sync + 'static {
     /// Creates a shortened URL and returns the generated short code.
     async fn shorten(&self, params: ShortenParams) -> Result<ShortCode>;
-
-    /// Resolves a short code to its stored URL record.
-    /// Returns `None` if the code does not exist or has expired.
-    async fn resolve(&self, code: &ShortCode) -> Result<Option<UrlRecord>>;
 
     /// Deletes a shortened URL by its short code.
     /// Returns `true` if the record existed and was removed.

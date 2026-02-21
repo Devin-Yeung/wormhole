@@ -61,12 +61,6 @@ impl<R: Repository, G: Generator> ShortenerService for ShortenerGrpcServer<R, G>
                 let code = ShortCode::new(&alias).map_err(|e| {
                     Status::invalid_argument(format!("invalid custom alias: {}", e))
                 })?;
-
-                // Check for alias conflict
-                if self.storage.exists(&code).await.map_err(Status::from)? {
-                    return Err(Status::already_exists("custom alias already exists"));
-                }
-
                 code
             }
             None => {
@@ -107,13 +101,48 @@ impl<R: Repository, G: Generator> ShortenerService for ShortenerGrpcServer<R, G>
 #[cfg(test)]
 mod tests {
     use crate::grpc::ShortenerGrpcServer;
+    use async_trait::async_trait;
     use prost_types::Timestamp;
     use tonic::Request;
     use wormhole_generator::seq::SeqGenerator;
     use wormhole_proto_schema::v1 as proto;
     use wormhole_proto_schema::v1::shortener_service_server::ShortenerService;
     use wormhole_proto_schema::v1::ShortCodeKind;
-    use wormhole_storage::InMemoryRepository;
+    use wormhole_storage::{InMemoryRepository, ReadRepository, Repository, StorageError};
+
+    #[derive(Debug, Clone, Default)]
+    struct InsertOnlyConflictRepo;
+
+    #[async_trait]
+    impl ReadRepository for InsertOnlyConflictRepo {
+        async fn get(
+            &self,
+            _code: &wormhole_core::ShortCode,
+        ) -> wormhole_storage::Result<Option<wormhole_core::UrlRecord>> {
+            Ok(None)
+        }
+
+        async fn exists(&self, _code: &wormhole_core::ShortCode) -> wormhole_storage::Result<bool> {
+            Err(StorageError::Query(
+                "exists() must not be called".to_string(),
+            ))
+        }
+    }
+
+    #[async_trait]
+    impl Repository for InsertOnlyConflictRepo {
+        async fn insert(
+            &self,
+            code: &wormhole_core::ShortCode,
+            _record: wormhole_core::UrlRecord,
+        ) -> wormhole_storage::Result<()> {
+            Err(StorageError::Conflict(code.to_string()))
+        }
+
+        async fn delete(&self, _code: &wormhole_core::ShortCode) -> wormhole_storage::Result<bool> {
+            Ok(false)
+        }
+    }
 
     type TestServer = ShortenerGrpcServer<InMemoryRepository, SeqGenerator>;
 
@@ -175,6 +204,22 @@ mod tests {
 
         assert!(result.is_err());
         let status = result.unwrap_err();
+        assert_eq!(status.code(), tonic::Code::AlreadyExists);
+    }
+
+    #[tokio::test]
+    async fn create_custom_alias_relies_on_insert_conflict_not_exists_precheck() {
+        let server =
+            ShortenerGrpcServer::new(InsertOnlyConflictRepo, SeqGenerator::with_prefix("test"));
+
+        let request = Request::new(create_request(
+            "https://example.com",
+            None,
+            Some("my-alias".to_string()),
+        ));
+        let result = server.create(request).await;
+
+        let status = result.expect_err("create should fail with conflict");
         assert_eq!(status.code(), tonic::Code::AlreadyExists);
     }
 }

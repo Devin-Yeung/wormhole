@@ -1,14 +1,18 @@
 use crate::error::RedirectorError;
-use crate::CachedRepository;
+use crate::redirector::Redirector;
 use proto::redirector_service_server::RedirectorService;
 use tonic::{Request, Response, Status};
-use wormhole_cache::UrlCache;
 use wormhole_core::{ShortCode, UrlRecord};
 use wormhole_proto_schema::v1 as proto;
-use wormhole_storage::ReadRepository;
 
-pub struct RedirectorGrpcServer<R: ReadRepository, C: UrlCache> {
-    storage: CachedRepository<R, C>,
+pub struct RedirectorGrpcServer<R: Redirector> {
+    redirector: R,
+}
+
+impl<R: Redirector> RedirectorGrpcServer<R> {
+    pub fn new(redirector: R) -> Self {
+        Self { redirector }
+    }
 }
 
 struct ResolveRequest {
@@ -70,7 +74,7 @@ impl TryInto<proto::ResolveResponse> for ResolveResponse {
 }
 
 #[tonic::async_trait]
-impl<R: ReadRepository, C: UrlCache> RedirectorService for RedirectorGrpcServer<R, C> {
+impl<R: Redirector> RedirectorService for RedirectorGrpcServer<R> {
     async fn resolve(
         &self,
         request: Request<proto::ResolveRequest>,
@@ -78,10 +82,10 @@ impl<R: ReadRepository, C: UrlCache> RedirectorService for RedirectorGrpcServer<
         let req: ResolveRequest = request.into_inner().try_into()?;
 
         let record = self
-            .storage
-            .get(&req.short_code)
+            .redirector
+            .resolve(&req.short_code)
             .await
-            .map_err(RedirectorError::from)?
+            .map_err(Status::from)?
             .ok_or(RedirectorError::ShortCodeNotFound)?;
 
         let resp: proto::ResolveResponse = ResolveResponse { url_record: record }.try_into()?;

@@ -1,9 +1,11 @@
 use std::sync::Arc;
 
+use crate::redirector::Redirector;
+use async_trait::async_trait;
 use jiff::Timestamp;
 use tracing::{debug, trace};
-use wormhole_core::ShortCode;
-use wormhole_storage::{ReadRepository, Result};
+use wormhole_core::{ShortCode, UrlRecord};
+use wormhole_storage::ReadRepository;
 
 /// Service for handling URL redirects.
 ///
@@ -34,10 +36,22 @@ impl<R: ReadRepository> RedirectorService<R> {
     /// * `Ok(Some(url))` - The original URL if found and not expired
     /// * `Ok(None)` - If the code doesn't exist or has expired
     /// * `Err(e)` - If there was an error accessing the repository
-    pub async fn resolve(&self, code: &ShortCode) -> Result<Option<String>> {
-        trace!(code = %code, "Resolving short code");
+    pub async fn resolve(&self, code: &ShortCode) -> crate::Result<Option<UrlRecord>> {
+        Redirector::resolve(self, code).await
+    }
+}
 
-        match self.repository.get(code).await? {
+#[async_trait]
+impl<R: ReadRepository> Redirector for RedirectorService<R> {
+    async fn resolve(&self, code: &ShortCode) -> crate::Result<Option<UrlRecord>> {
+        trace!(code = %code, "resolving short code");
+
+        match self
+            .repository
+            .get(code)
+            .await
+            .map_err(crate::RedirectorError::from)?
+        {
             Some(record) => {
                 // Check expiration
                 if let Some(expire_at) = record.expire_at {
@@ -48,7 +62,7 @@ impl<R: ReadRepository> RedirectorService<R> {
                 }
 
                 debug!(code = %code, url = %record.original_url, "Resolved short code");
-                Ok(Some(record.original_url))
+                Ok(Some(record))
             }
             None => {
                 trace!(code = %code, "Short code not found");
@@ -91,7 +105,8 @@ mod tests {
         let service = setup_with_record(&c, record("https://example.com", None)).await;
 
         let result = service.resolve(&c).await.unwrap();
-        assert_eq!(result, Some("https://example.com".to_string()));
+        let result = result.expect("record should exist");
+        assert_eq!(result.original_url, "https://example.com");
     }
 
     #[tokio::test]
@@ -120,13 +135,7 @@ mod tests {
         let service = setup_with_record(&c, record("https://example.com", Some(future))).await;
 
         let result = service.resolve(&c).await.unwrap();
-        assert_eq!(result, Some("https://example.com".to_string()));
-    }
-
-    #[tokio::test]
-    async fn service_is_clone() {
-        let service = RedirectorService::new(InMemoryRepository::new());
-        let _cloned = service.clone();
-        // If this compiles, the test passes
+        let result = result.expect("record should exist");
+        assert_eq!(result.original_url, "https://example.com");
     }
 }

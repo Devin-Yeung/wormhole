@@ -76,18 +76,7 @@ impl<R: Repository, G: Generator> Shortener for ShortenerService<R, G> {
 
         // Determine the short code to use
         let short_code = match params.custom_alias {
-            Some(code) => {
-                // Check for alias conflict
-                if self
-                    .repository
-                    .exists(&code)
-                    .await
-                    .map_err(storage_to_shortener_error)?
-                {
-                    return Err(ShortenerError::AliasConflict(code.to_string()));
-                }
-                code
-            }
+            Some(code) => code,
             // the generator can always produce a new code, so no need to check for conflicts here
             None => self.generate_code(),
         };
@@ -120,13 +109,6 @@ impl<R: Repository, G: Generator> Shortener for ShortenerService<R, G> {
         Ok(short_code)
     }
 
-    async fn resolve(&self, code: &ShortCode) -> Result<Option<UrlRecord>, ShortenerError> {
-        self.repository
-            .get(code)
-            .await
-            .map_err(storage_to_shortener_error)
-    }
-
     async fn delete(&self, code: &ShortCode) -> Result<bool, ShortenerError> {
         self.repository
             .delete(code)
@@ -146,8 +128,40 @@ fn storage_to_shortener_error(error: StorageError) -> ShortenerError {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use async_trait::async_trait;
     use wormhole_generator::seq::SeqGenerator;
-    use wormhole_storage::InMemoryRepository;
+    use wormhole_storage::{InMemoryRepository, ReadRepository};
+
+    #[derive(Debug, Clone, Default)]
+    struct InsertConflictRepo;
+
+    #[async_trait]
+    impl ReadRepository for InsertConflictRepo {
+        async fn get(&self, _code: &ShortCode) -> wormhole_storage::Result<Option<UrlRecord>> {
+            Ok(None)
+        }
+
+        async fn exists(&self, _code: &ShortCode) -> wormhole_storage::Result<bool> {
+            Err(StorageError::Query(
+                "exists() must not be called".to_string(),
+            ))
+        }
+    }
+
+    #[async_trait]
+    impl Repository for InsertConflictRepo {
+        async fn insert(
+            &self,
+            code: &ShortCode,
+            _record: UrlRecord,
+        ) -> wormhole_storage::Result<()> {
+            Err(StorageError::Conflict(code.to_string()))
+        }
+
+        async fn delete(&self, _code: &ShortCode) -> wormhole_storage::Result<bool> {
+            Ok(false)
+        }
+    }
 
     fn test_service() -> ShortenerService<InMemoryRepository, SeqGenerator> {
         let repo = InMemoryRepository::new();
@@ -205,6 +219,20 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn shorten_custom_alias_uses_insert_conflict_without_exists_precheck() {
+        let service = ShortenerService::new(InsertConflictRepo, SeqGenerator::with_prefix("wh"));
+
+        let params = ShortenParams {
+            original_url: "https://example.com".to_string(),
+            expiration: ExpirationPolicy::Never,
+            custom_alias: Some(ShortCode::new("my-alias").unwrap()),
+        };
+
+        let err = service.shorten(params).await.unwrap_err();
+        assert!(matches!(err, ShortenerError::AliasConflict(_)));
+    }
+
+    #[tokio::test]
     async fn shorten_with_invalid_url_fails() {
         let service = test_service();
 
@@ -216,37 +244,6 @@ mod tests {
 
         let err = service.shorten(params).await.unwrap_err();
         assert!(matches!(err, ShortenerError::InvalidUrl(_)));
-    }
-
-    #[tokio::test]
-    async fn resolve_existing_url() {
-        let service = test_service();
-
-        let params = ShortenParams {
-            original_url: "https://example.com".to_string(),
-            expiration: ExpirationPolicy::Never,
-            custom_alias: Some(ShortCode::new("abc123").unwrap()),
-        };
-
-        service.shorten(params).await.unwrap();
-
-        let record = service
-            .resolve(&ShortCode::new("abc123").unwrap())
-            .await
-            .unwrap();
-        assert!(record.is_some());
-        assert_eq!(record.unwrap().original_url, "https://example.com");
-    }
-
-    #[tokio::test]
-    async fn resolve_nonexistent_url() {
-        let service = test_service();
-
-        let record = service
-            .resolve(&ShortCode::new("nonexistent").unwrap())
-            .await
-            .unwrap();
-        assert!(record.is_none());
     }
 
     #[tokio::test]
@@ -266,11 +263,11 @@ mod tests {
             .unwrap();
         assert!(deleted);
 
-        let record = service
-            .resolve(&ShortCode::new("abc123").unwrap())
+        let deleted_again = service
+            .delete(&ShortCode::new("abc123").unwrap())
             .await
             .unwrap();
-        assert!(record.is_none());
+        assert!(!deleted_again);
     }
 
     #[tokio::test]

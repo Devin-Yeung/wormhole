@@ -3,6 +3,8 @@ use tonic::{Code, Status};
 use wormhole_proto_schema::v1::ConversionError;
 use wormhole_storage::StorageError;
 
+pub type Result<T> = std::result::Result<T, RedirectorError>;
+
 #[derive(Debug, Error)]
 pub enum RedirectorError {
     #[error("short code is required")]
