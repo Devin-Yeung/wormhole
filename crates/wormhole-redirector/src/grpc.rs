@@ -1,13 +1,11 @@
+use crate::error::RedirectorError;
+use crate::CachedRepository;
 use proto::redirector_service_server::RedirectorService;
 use tonic::{Request, Response, Status};
 use wormhole_cache::UrlCache;
 use wormhole_core::{ShortCode, UrlRecord};
 use wormhole_proto_schema::v1 as proto;
 use wormhole_storage::ReadRepository;
-
-use wormhole_redirector::CachedRepository;
-
-use crate::error::RedirectorError;
 
 pub struct RedirectorGrpcServer<R: ReadRepository, C: UrlCache> {
     storage: CachedRepository<R, C>,

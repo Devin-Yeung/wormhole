@@ -60,8 +60,11 @@
 //! # }
 //! ```
 
+mod error;
+pub mod grpc;
 pub mod repository;
 pub mod service;
 
+pub use error::RedirectorError;
 pub use repository::CachedRepository;
 pub use service::RedirectorService;

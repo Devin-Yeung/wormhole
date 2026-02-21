@@ -4,7 +4,7 @@ use wormhole_proto_schema::v1::ConversionError;
 use wormhole_storage::StorageError;
 
 #[derive(Debug, Error)]
-pub(crate) enum RedirectorError {
+pub enum RedirectorError {
     #[error("short code is required")]
     ShortCodeRequired,
     #[error("short code is malformed: {0}")]
