@@ -23,6 +23,7 @@ clap = { version = "4.5.31", features = ["derive", "env"] }
 jiff = { workspace = true }
 # gRPC
 tonic = { workspace = true }
+prost-types = { workspace = true }
 # Tracing
 tracing = { workspace = true }
 tracing-subscriber = { workspace = true }

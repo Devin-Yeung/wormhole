@@ -103,3 +103,78 @@ impl<R: Repository, G: Generator> ShortenerService for ShortenerGrpcServer<R, G>
         Ok(Response::new(response))
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::server::ShortenerGrpcServer;
+    use prost_types::Timestamp;
+    use tonic::Request;
+    use wormhole_generator::seq::SeqGenerator;
+    use wormhole_proto_schema::v1 as proto;
+    use wormhole_proto_schema::v1::shortener_service_server::ShortenerService;
+    use wormhole_proto_schema::v1::ShortCodeKind;
+    use wormhole_storage::InMemoryRepository;
+
+    type TestServer = ShortenerGrpcServer<InMemoryRepository, SeqGenerator>;
+
+    fn test_server() -> TestServer {
+        let repo = InMemoryRepository::new();
+        let generator = SeqGenerator::with_prefix("test");
+        ShortenerGrpcServer::new(repo, generator)
+    }
+
+    fn create_request(
+        original_url: impl Into<String>,
+        expire_at: Option<Timestamp>,
+        custom_alias: Option<String>,
+    ) -> proto::CreateRequest {
+        proto::CreateRequest {
+            original_url: original_url.into(),
+            expire_at,
+            custom_alias,
+        }
+    }
+
+    #[tokio::test]
+    async fn create_with_custom_alias() {
+        let server = test_server();
+
+        let request = Request::new(create_request(
+            "https://example.com",
+            None,
+            Some("my-alias".to_string()),
+        ));
+        let response = server.create(request).await.unwrap();
+
+        let resp = response.into_inner();
+        let short_code = resp.short_code.unwrap();
+
+        assert_eq!(short_code.code, "my-alias");
+        assert_eq!(short_code.kind, ShortCodeKind::Custom as i32);
+    }
+
+    #[tokio::test]
+    async fn create_with_duplicate_alias_fails() {
+        let server = test_server();
+
+        // First request with custom alias should succeed
+        let request1 = Request::new(create_request(
+            "https://example1.com",
+            None,
+            Some("my-alias".to_string()),
+        ));
+        server.create(request1).await.unwrap();
+
+        // Second request with same alias should fail
+        let request2 = Request::new(create_request(
+            "https://example2.com",
+            None,
+            Some("my-alias".to_string()),
+        ));
+        let result = server.create(request2).await;
+
+        assert!(result.is_err());
+        let status = result.unwrap_err();
+        assert_eq!(status.code(), tonic::Code::AlreadyExists);
+    }
+}
