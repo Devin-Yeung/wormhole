@@ -106,7 +106,7 @@ impl<R: Repository, G: Generator> ShortenerService for ShortenerGrpcServer<R, G>
 
 #[cfg(test)]
 mod tests {
-    use crate::server::ShortenerGrpcServer;
+    use crate::grpc::ShortenerGrpcServer;
     use prost_types::Timestamp;
     use tonic::Request;
     use wormhole_generator::seq::SeqGenerator;

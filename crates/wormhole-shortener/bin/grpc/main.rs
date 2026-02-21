@@ -1,8 +1,6 @@
 mod cli;
-mod server;
 
 use crate::cli::{StorageBackendArg, CLI};
-use crate::server::ShortenerGrpcServer;
 use clap::Parser;
 use jiff::Timestamp;
 use tonic::transport::Server;
@@ -10,6 +8,7 @@ use tracing::info;
 use wormhole_generator::obfuscated::{ObfuscatedTinyFlake, Obfuscator};
 use wormhole_generator::Generator;
 use wormhole_proto_schema::v1::shortener_service_server::ShortenerServiceServer;
+use wormhole_shortener::grpc::ShortenerGrpcServer;
 use wormhole_storage::{InMemoryRepository, MySqlRepository, Repository};
 use wormhole_tinyflake::TinyflakeSettings;
 
