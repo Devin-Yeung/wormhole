@@ -1,28 +1,26 @@
 use crate::error::Result;
-use crate::model::{CreateUrlRequest, HealthResponse, UrlResponse};
+use crate::model::{CreateUrlRequest, CreateUrlResponse, DeleteUrlResponse, GetUrlResponse};
 use crate::state::AppState;
 use axum::extract::{Path, State};
-use axum::http::StatusCode;
-use axum::response::Response;
 use axum::Json;
 
 pub async fn create_url_handler(
-    State(state): State<AppState>,
-    Json(request): Json<CreateUrlRequest>,
-) -> Result<Response> {
+    State(_state): State<AppState>,
+    Json(_request): Json<CreateUrlRequest>,
+) -> Result<Json<CreateUrlResponse>> {
     todo!()
 }
 
 pub async fn get_url_handler(
-    Path(short_code): Path<String>,
-    State(state): State<AppState>,
-) -> Result<Json<UrlResponse>> {
+    Path(_short_code): Path<String>,
+    State(_state): State<AppState>,
+) -> Result<Json<GetUrlResponse>> {
     todo!()
 }
 
 pub async fn delete_url_handler(
-    Path(short_code): Path<String>,
-    State(state): State<AppState>,
-) -> Result<StatusCode> {
+    Path(_short_code): Path<String>,
+    State(_state): State<AppState>,
+) -> Result<Json<DeleteUrlResponse>> {
     todo!()
 }

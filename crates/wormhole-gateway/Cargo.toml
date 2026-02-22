@@ -17,3 +17,4 @@ serde = { workspace = true, features = ["derive"] }
 tower = { version = "0.5", features = ["util"] }
 jiff = { workspace = true }
 typed-builder = { workspace = true }
+async-trait = { workspace = true }

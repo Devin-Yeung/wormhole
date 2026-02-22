@@ -1,8 +1,4 @@
-use axum::{
-    http::StatusCode,
-    response::{IntoResponse, Response},
-    Json,
-};
+use axum::response::{IntoResponse, Response};
 
 pub type Result<T> = std::result::Result<T, AppError>;
 
