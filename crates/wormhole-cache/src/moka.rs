@@ -4,12 +4,9 @@ use std::future::Future;
 use std::time::Duration;
 use tracing::{debug, trace};
 use typed_builder::TypedBuilder;
-use wormhole_core::{CacheError, ShortCode, UrlRecord};
+use wormhole_core::{ShortCode, UrlRecord};
 
-use crate::UrlCache;
-
-/// Type alias for cache results.
-pub type Result<T> = std::result::Result<T, CacheError>;
+use crate::{Result, UrlCache};
 
 /// An in-memory cache implementation using Moka.
 ///
@@ -185,6 +182,7 @@ impl From<CacheConfig> for MokaUrlCache {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::CacheError;
     use jiff::Timestamp;
 
     fn test_record(url: &str) -> UrlRecord {

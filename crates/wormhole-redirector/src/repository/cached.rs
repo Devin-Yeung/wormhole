@@ -1,6 +1,6 @@
 use async_trait::async_trait;
 use tracing::{debug, trace};
-use wormhole_cache::UrlCache;
+use wormhole_cache::{CacheError, UrlCache};
 use wormhole_core::{ShortCode, UrlRecord};
 use wormhole_storage::{ReadRepository, StorageError};
 
@@ -77,11 +77,10 @@ impl<R: ReadRepository, C: UrlCache> ReadRepository for CachedRepository<R, C> {
                 let code = c.clone();
                 async move {
                     trace!(code = %code, "Cache miss, fetching from inner repository");
-                    self.inner.get(&code).await.map_err(|e| {
-                        wormhole_core::CacheError::Operation(format!(
-                            "repository fetch failed: {e}"
-                        ))
-                    })
+                    self.inner
+                        .get(&code)
+                        .await
+                        .map_err(|e| CacheError::Operation(format!("repository fetch failed: {e}")))
                 }
             })
             .await

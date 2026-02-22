@@ -8,6 +8,9 @@ license.workspace = true
 # Workspace members
 wormhole-core = { workspace = true }
 
+# Error handling
+thiserror = { workspace = true }
+
 # Async
 async-trait = { workspace = true }
 

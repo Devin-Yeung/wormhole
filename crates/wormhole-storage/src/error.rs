@@ -1,7 +1,7 @@
 use std::sync::Arc;
 use thiserror::Error;
 use tonic::{Code, Status};
-use wormhole_core::CacheError;
+use wormhole_cache::CacheError;
 
 /// Result type for repository operations.
 pub type Result<T> = std::result::Result<T, StorageError>;

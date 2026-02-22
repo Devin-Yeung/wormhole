@@ -1,12 +1,10 @@
+use crate::Result;
 use async_trait::async_trait;
 use std::future::Future;
 use tracing::{debug, trace};
-use wormhole_core::{CacheError, ShortCode, UrlRecord};
+use wormhole_core::{ShortCode, UrlRecord};
 
 use crate::UrlCache;
-
-/// Type alias for cache results.
-pub type Result<T> = std::result::Result<T, CacheError>;
 
 /// A multi-layer cache that composes two cache implementations.
 ///

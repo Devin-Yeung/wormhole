@@ -1,12 +1,9 @@
 use async_trait::async_trait;
 use deadpool_redis::redis::AsyncCommands;
 use tracing::{debug, trace, warn};
-use wormhole_core::{CacheError, ShortCode, UrlRecord};
+use wormhole_core::{ShortCode, UrlRecord};
 
-use crate::UrlCache;
-
-/// Type alias for cache results.
-pub type Result<T> = std::result::Result<T, CacheError>;
+use crate::{CacheError, Result, UrlCache};
 
 /// A Redis Sentinel-based high-availability implementation of [`UrlCache`].
 ///

@@ -7,5 +7,5 @@ pub mod base58;
 pub mod error;
 pub mod shortcode;
 
-pub use error::{CacheError, CoreError};
+pub use error::CoreError;
 pub use shortcode::{ShortCode, UrlRecord};

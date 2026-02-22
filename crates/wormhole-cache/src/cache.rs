@@ -1,8 +1,7 @@
+use crate::Result;
 use async_trait::async_trait;
 use std::future::Future;
-use wormhole_core::{CacheError, ShortCode, UrlRecord};
-
-pub type Result<T> = std::result::Result<T, CacheError>;
+use wormhole_core::{ShortCode, UrlRecord};
 
 /// A cache for URL records.
 ///

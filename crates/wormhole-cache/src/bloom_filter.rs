@@ -25,9 +25,9 @@
 use async_trait::async_trait;
 use parking_lot::RwLock;
 use typed_builder::TypedBuilder;
-use wormhole_core::{CacheError, ShortCode, UrlRecord};
+use wormhole_core::{ShortCode, UrlRecord};
 
-use crate::{Result, UrlCache};
+use crate::{CacheError, Result, UrlCache};
 
 /// Configuration for the Bloom filter.
 ///

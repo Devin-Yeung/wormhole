@@ -6,6 +6,7 @@ license.workspace = true
 
 [dependencies]
 wormhole-core = { workspace = true }
+wormhole-cache = { workspace = true }
 
 # Async runtime
 tokio = { workspace = true }

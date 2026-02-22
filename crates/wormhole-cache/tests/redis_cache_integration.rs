@@ -1,8 +1,8 @@
 use std::time::Duration;
 
 use redis::AsyncCommands;
-use wormhole_cache::{RedisUrlCache, UrlCache};
-use wormhole_core::{CacheError, ShortCode, UrlRecord};
+use wormhole_cache::{CacheError, RedisUrlCache, UrlCache};
+use wormhole_core::{ShortCode, UrlRecord};
 use wormhole_test_infra::redis::RedisMaster;
 
 /// Test fixture that manages a Redis container using test-infra.

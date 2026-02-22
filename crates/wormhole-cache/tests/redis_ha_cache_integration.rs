@@ -1,7 +1,8 @@
 use std::time::Duration;
 
+use wormhole_cache::Result;
 use wormhole_cache::{RedisHAUrlCache, UrlCache};
-use wormhole_core::{CacheError, ShortCode, UrlRecord};
+use wormhole_core::{ShortCode, UrlRecord};
 use wormhole_test_infra::redis::{RedisHA, RedisHAConfig};
 
 /// Test fixture that manages a Redis HA environment using test-infra.
@@ -38,15 +39,12 @@ impl RedisHATestFixture {
     }
 
     /// Creates a new RedisHAUrlCache instance.
-    pub fn create_cache(&self) -> Result<RedisHAUrlCache, CacheError> {
+    pub fn create_cache(&self) -> Result<RedisHAUrlCache> {
         RedisHAUrlCache::new(self.sentinel_urls.clone(), &self.service_name)
     }
 
     /// Creates a new RedisHAUrlCache instance with custom prefix.
-    pub fn create_cache_with_prefix(
-        &self,
-        prefix: impl Into<String>,
-    ) -> Result<RedisHAUrlCache, CacheError> {
+    pub fn create_cache_with_prefix(&self, prefix: impl Into<String>) -> Result<RedisHAUrlCache> {
         RedisHAUrlCache::with_prefix(self.sentinel_urls.clone(), &self.service_name, prefix)
     }
 }

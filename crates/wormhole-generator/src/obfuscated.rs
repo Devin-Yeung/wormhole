@@ -48,15 +48,15 @@ pub struct ObfuscatedTinyID {
     inner: [u8; 5],
 }
 
-impl Into<ShortCodeBase58> for ObfuscatedTinyID {
-    fn into(self) -> ShortCodeBase58 {
-        ShortCodeBase58::new(self.inner)
+impl From<ObfuscatedTinyID> for ShortCodeBase58 {
+    fn from(val: ObfuscatedTinyID) -> Self {
+        ShortCodeBase58::new(val.inner)
     }
 }
 
-impl Into<ShortCode> for ObfuscatedTinyID {
-    fn into(self) -> ShortCode {
-        ShortCode::Generated(self.into())
+impl From<ObfuscatedTinyID> for ShortCode {
+    fn from(val: ObfuscatedTinyID) -> Self {
+        ShortCode::Generated(val.into())
     }
 }
 
