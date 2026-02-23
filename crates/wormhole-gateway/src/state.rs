@@ -28,4 +28,16 @@ pub struct AppState {
     base_url: String,
 }
 
-impl AppState {}
+impl AppState {
+    pub fn shortener(&self) -> Arc<dyn Shortener> {
+        Arc::clone(&self.shortener)
+    }
+
+    pub fn redirector(&self) -> Arc<dyn Redirector> {
+        Arc::clone(&self.redirector)
+    }
+
+    pub fn base_url(&self) -> &str {
+        &self.base_url
+    }
+}

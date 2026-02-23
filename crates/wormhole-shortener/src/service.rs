@@ -190,7 +190,7 @@ mod tests {
         let params = ShortenParams {
             original_url: "https://example.com".to_string(),
             expiration: ExpirationPolicy::Never,
-            custom_alias: Some(ShortCode::new("my-alias").unwrap()),
+            custom_alias: Some(ShortCode::custom("my-alias").unwrap()),
         };
 
         let code = service.shorten(params).await.unwrap();
@@ -204,13 +204,13 @@ mod tests {
         let params1 = ShortenParams {
             original_url: "https://example1.com".to_string(),
             expiration: ExpirationPolicy::Never,
-            custom_alias: Some(ShortCode::new("my-alias").unwrap()),
+            custom_alias: Some(ShortCode::custom("my-alias").unwrap()),
         };
 
         let params2 = ShortenParams {
             original_url: "https://example2.com".to_string(),
             expiration: ExpirationPolicy::Never,
-            custom_alias: Some(ShortCode::new("my-alias").unwrap()),
+            custom_alias: Some(ShortCode::custom("my-alias").unwrap()),
         };
 
         service.shorten(params1).await.unwrap();
@@ -225,7 +225,7 @@ mod tests {
         let params = ShortenParams {
             original_url: "https://example.com".to_string(),
             expiration: ExpirationPolicy::Never,
-            custom_alias: Some(ShortCode::new("my-alias").unwrap()),
+            custom_alias: Some(ShortCode::custom("my-alias").unwrap()),
         };
 
         let err = service.shorten(params).await.unwrap_err();
@@ -253,18 +253,18 @@ mod tests {
         let params = ShortenParams {
             original_url: "https://example.com".to_string(),
             expiration: ExpirationPolicy::Never,
-            custom_alias: Some(ShortCode::new("abc123").unwrap()),
+            custom_alias: Some(ShortCode::custom("abc123").unwrap()),
         };
 
         service.shorten(params).await.unwrap();
         let deleted = service
-            .delete(&ShortCode::new("abc123").unwrap())
+            .delete(&ShortCode::custom("abc123").unwrap())
             .await
             .unwrap();
         assert!(deleted);
 
         let deleted_again = service
-            .delete(&ShortCode::new("abc123").unwrap())
+            .delete(&ShortCode::custom("abc123").unwrap())
             .await
             .unwrap();
         assert!(!deleted_again);
@@ -275,7 +275,7 @@ mod tests {
         let service = test_service();
 
         let deleted = service
-            .delete(&ShortCode::new("nonexistent").unwrap())
+            .delete(&ShortCode::custom("nonexistent").unwrap())
             .await
             .unwrap();
         assert!(!deleted);

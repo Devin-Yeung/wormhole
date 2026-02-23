@@ -53,7 +53,7 @@ async fn test_redis_cache_basic_get_set() {
     let conn = fixture.create_connection().await;
     let cache = RedisUrlCache::new(conn);
 
-    let code = ShortCode::new("test123").unwrap();
+    let code = ShortCode::custom("test123").unwrap();
     let record = create_test_record("https://example.com");
 
     // Initially, the cache should be empty
@@ -79,7 +79,7 @@ async fn test_redis_cache_delete() {
     let conn = fixture.create_connection().await;
     let cache = RedisUrlCache::new(conn);
 
-    let code = ShortCode::new("delete123").unwrap();
+    let code = ShortCode::custom("delete123").unwrap();
     let record = create_test_record("https://example.com/delete");
 
     // Set the URL in cache
@@ -103,8 +103,8 @@ async fn test_redis_cache_multiple_codes() {
     let conn = fixture.create_connection().await;
     let cache = RedisUrlCache::new(conn);
 
-    let code1 = ShortCode::new("abc123").unwrap();
-    let code2 = ShortCode::new("def456").unwrap();
+    let code1 = ShortCode::custom("abc123").unwrap();
+    let code2 = ShortCode::custom("def456").unwrap();
     let record1 = create_test_record("https://example.com/1");
     let record2 = create_test_record("https://example.com/2");
 
@@ -138,7 +138,7 @@ async fn test_redis_cache_custom_prefix() {
     let cache1 = RedisUrlCache::with_prefix(conn1, "prefix1:");
     let cache2 = RedisUrlCache::with_prefix(conn2, "prefix2:");
 
-    let code = ShortCode::new("prefix_test").unwrap();
+    let code = ShortCode::custom("prefix_test").unwrap();
     let record = create_test_record("https://example.com/prefix");
 
     // Set in cache1 only
@@ -159,7 +159,7 @@ async fn test_redis_cache_overwrite() {
     let conn = fixture.create_connection().await;
     let cache = RedisUrlCache::new(conn);
 
-    let code = ShortCode::new("overwrite").unwrap();
+    let code = ShortCode::custom("overwrite").unwrap();
     let record1 = create_test_record("https://example.com/old");
     let record2 = create_test_record("https://example.com/new");
 
@@ -180,7 +180,7 @@ async fn test_redis_cache_nonexistent_key() {
     let conn = fixture.create_connection().await;
     let cache = RedisUrlCache::new(conn);
 
-    let code = ShortCode::new("nonexistent").unwrap();
+    let code = ShortCode::custom("nonexistent").unwrap();
 
     // Try to get a key that doesn't exist
     let result = cache.get_url(&code).await.unwrap();
@@ -198,7 +198,7 @@ async fn test_redis_cache_invalid_json_returns_error() {
 
     // Insert malformed JSON via raw Redis command to emulate data corruption.
     let mut redis_conn = fixture.create_connection().await;
-    let code = ShortCode::new("invalid_json").unwrap();
+    let code = ShortCode::custom("invalid_json").unwrap();
     let key = format!("wh:url:{}", code.as_str());
     redis_conn.set::<_, _, ()>(&key, "{not json").await.unwrap();
 
@@ -225,7 +225,7 @@ async fn test_redis_cache_with_ttl_via_redis() {
 
     // Create cache and verify it can read the key
     let cache = RedisUrlCache::new(conn);
-    let code = ShortCode::new("ttl_test").unwrap();
+    let code = ShortCode::custom("ttl_test").unwrap();
 
     let result = cache.get_url(&code).await.unwrap();
     assert!(result.is_some(), "Should be able to read key with TTL");

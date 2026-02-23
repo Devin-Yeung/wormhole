@@ -63,7 +63,7 @@ async fn test_redis_ha_cache_basic_get_set() {
     let cache = fixture.create_cache().unwrap();
 
     for i in 0..100 {
-        let code = ShortCode::new(format!("testcode{i}")).unwrap();
+        let code = ShortCode::custom(format!("testcode{i}")).unwrap();
         let record = create_test_record(format!("https://example.com/{i}"));
 
         // Initially, the cache should be empty
@@ -78,7 +78,7 @@ async fn test_redis_ha_cache_basic_get_set() {
     awaitility::at_most(Duration::from_secs(10))
         .poll_interval(Duration::from_millis(100))
         .until_async(|| async {
-            let code = ShortCode::new("testcode50").unwrap();
+            let code = ShortCode::custom("testcode50").unwrap();
             let result = cache.get_url(&code).await.unwrap();
             result.is_some()
         })

@@ -58,7 +58,7 @@ impl<R: Repository, G: Generator> ShortenerService for ShortenerGrpcServer<R, G>
         let short_code = match req.custom_alias {
             Some(alias) => {
                 // Validate and create custom alias
-                let code = ShortCode::new(&alias).map_err(|e| {
+                let code = ShortCode::custom(&alias).map_err(|e| {
                     Status::invalid_argument(format!("invalid custom alias: {}", e))
                 })?;
                 code

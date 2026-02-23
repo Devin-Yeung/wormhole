@@ -52,7 +52,7 @@ impl ShortCode {
     /// Creates a new `ShortCode` after validating the input.
     ///
     /// Valid codes are 3-32 characters and contain only `[a-zA-Z0-9_-]`.
-    pub fn new(code: impl Into<String>) -> std::result::Result<Self, CoreError> {
+    pub fn custom(code: impl Into<String>) -> std::result::Result<Self, CoreError> {
         let code = code.into();
         Self::validate(&code)?;
         Ok(Self::Custom(code))
@@ -119,39 +119,39 @@ mod tests {
 
     #[test]
     fn valid_codes() {
-        assert!(ShortCode::new("abc").is_ok());
-        assert!(ShortCode::new("Abc-123_xyz").is_ok());
-        assert!(ShortCode::new("a".repeat(32)).is_ok());
+        assert!(ShortCode::custom("abc").is_ok());
+        assert!(ShortCode::custom("Abc-123_xyz").is_ok());
+        assert!(ShortCode::custom("a".repeat(32)).is_ok());
     }
 
     #[test]
     fn too_short() {
-        let err = ShortCode::new("ab").unwrap_err();
+        let err = ShortCode::custom("ab").unwrap_err();
         assert!(matches!(err, CoreError::InvalidShortCode(_)));
-        assert!(ShortCode::new("").is_err());
+        assert!(ShortCode::custom("").is_err());
     }
 
     #[test]
     fn too_long() {
-        assert!(ShortCode::new("a".repeat(33)).is_err());
+        assert!(ShortCode::custom("a".repeat(33)).is_err());
     }
 
     #[test]
     fn invalid_characters() {
-        assert!(ShortCode::new("abc def").is_err());
-        assert!(ShortCode::new("abc/def").is_err());
-        assert!(ShortCode::new("abc!def").is_err());
+        assert!(ShortCode::custom("abc def").is_err());
+        assert!(ShortCode::custom("abc/def").is_err());
+        assert!(ShortCode::custom("abc!def").is_err());
     }
 
     #[test]
     fn display_custom() {
-        let code = ShortCode::new("my-code").unwrap();
+        let code = ShortCode::custom("my-code").unwrap();
         assert_eq!(code.to_string(), "my-code");
     }
 
     #[test]
     fn to_url_custom() {
-        let code = ShortCode::new("abc123").unwrap();
+        let code = ShortCode::custom("abc123").unwrap();
         assert_eq!(code.to_url("https://worm.hole"), "https://worm.hole/abc123");
         assert_eq!(
             code.to_url("https://worm.hole/"),

@@ -31,7 +31,7 @@ impl TryInto<core::ShortCode> for &ShortCode {
                 })?;
                 Ok(core::ShortCode::generated(ShortCodeBase58::new(decoded)))
             }
-            ShortCodeKind::Custom => core::ShortCode::new(self.code.as_str())
+            ShortCodeKind::Custom => core::ShortCode::custom(self.code.as_str())
                 .map_err(|_| ConversionError::MalformedCode(self.code.clone())),
         }
     }
