@@ -17,17 +17,6 @@ pub enum AppError {
     Internal(String),
 }
 
-#[derive(Serialize)]
-struct ErrorResponse {
-    error: ErrorDetail,
-}
-
-#[derive(Serialize)]
-struct ErrorDetail {
-    code: &'static str,
-    message: String,
-}
-
 impl AppError {
     pub fn invalid_request(message: impl Into<String>) -> Self {
         Self::InvalidRequest(message.into())
@@ -80,13 +69,14 @@ impl From<ShortenerError> for AppError {
 impl IntoResponse for AppError {
     fn into_response(self) -> Response {
         let (status, code) = self.status_and_code();
-        let response = ErrorResponse {
-            error: ErrorDetail {
-                code,
-                message: self.message(),
-            },
-        };
 
-        (status, Json(response)).into_response()
+        let resp = serde_json::json!({
+            "error": {
+                "code": code,
+                "message": self.message(),
+            }
+        });
+
+        (status, Json(resp)).into_response()
     }
 }
