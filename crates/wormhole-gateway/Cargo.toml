@@ -8,6 +8,9 @@ edition.workspace = true
 wormhole-core = { workspace = true }
 wormhole-shortener = { workspace = true }
 wormhole-redirector = { workspace = true }
+wormhole-storage = { workspace = true }
+wormhole-generator = { workspace = true }
+# async runtime
 tokio = { workspace = true }
 # tracing
 tracing = { workspace = true }

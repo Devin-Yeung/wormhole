@@ -1,6 +1,7 @@
 use async_trait::async_trait;
 use dashmap::DashMap;
 use jiff::Timestamp;
+use std::sync::Arc;
 use wormhole_core::{ShortCode, UrlRecord};
 
 use crate::{ReadRepository, Repository, Result, StorageError};
@@ -33,21 +34,21 @@ impl Entry {
 /// buckets without blocking.
 #[derive(Debug, Clone)]
 pub struct InMemoryRepository {
-    storage: DashMap<String, Entry>,
+    storage: Arc<DashMap<String, Entry>>,
 }
 
 impl InMemoryRepository {
     /// Creates a new in-memory repository.
     pub fn new() -> Self {
         Self {
-            storage: DashMap::new(),
+            storage: Arc::new(DashMap::new()),
         }
     }
 
     /// Creates a new in-memory repository with the specified capacity.
     pub fn with_capacity(capacity: usize) -> Self {
         Self {
-            storage: DashMap::with_capacity(capacity),
+            storage: Arc::new(DashMap::with_capacity(capacity)),
         }
     }
 }

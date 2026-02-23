@@ -1,7 +1,7 @@
 use axum::http::StatusCode;
 use axum::response::{IntoResponse, Response};
 use axum::Json;
-use serde::Serialize;
+use wormhole_redirector::RedirectorError;
 use wormhole_shortener::ShortenerError;
 
 pub type Result<T> = std::result::Result<T, AppError>;
@@ -11,6 +11,7 @@ pub enum AppError {
     InvalidRequest(String),
     InvalidUrl(String),
     InvalidShortCode(String),
+    NotFound,
     AliasConflict(String),
     StorageUnavailable(String),
     StorageTimeout(String),
@@ -27,6 +28,7 @@ impl AppError {
             Self::InvalidRequest(_) => (StatusCode::BAD_REQUEST, "invalid_request"),
             Self::InvalidUrl(_) => (StatusCode::BAD_REQUEST, "invalid_url"),
             Self::InvalidShortCode(_) => (StatusCode::BAD_REQUEST, "invalid_short_code"),
+            Self::NotFound => (StatusCode::NOT_FOUND, "short_code_not_found"),
             Self::AliasConflict(_) => (StatusCode::CONFLICT, "alias_conflict"),
             Self::StorageUnavailable(_) => (StatusCode::SERVICE_UNAVAILABLE, "storage_unavailable"),
             Self::StorageTimeout(_) => (StatusCode::GATEWAY_TIMEOUT, "storage_timeout"),
@@ -42,6 +44,7 @@ impl AppError {
             | Self::StorageUnavailable(message)
             | Self::StorageTimeout(message)
             | Self::Internal(message) => message,
+            Self::NotFound => "short code not found".to_string(),
             Self::AliasConflict(_) => "short code already exists".to_string(),
         }
     }
@@ -54,6 +57,29 @@ impl From<ShortenerError> for AppError {
             ShortenerError::InvalidUrl(message) => Self::InvalidUrl(message),
             ShortenerError::InvalidShortCode(message) => Self::InvalidShortCode(message),
             ShortenerError::Storage(message) => {
+                if message.starts_with("storage backend unavailable:") {
+                    Self::StorageUnavailable(message)
+                } else if message.starts_with("storage operation timed out:") {
+                    Self::StorageTimeout(message)
+                } else {
+                    Self::Internal(message)
+                }
+            }
+        }
+    }
+}
+
+impl From<RedirectorError> for AppError {
+    fn from(error: RedirectorError) -> Self {
+        match error {
+            RedirectorError::ShortCodeRequired => {
+                Self::InvalidShortCode("short code is required".to_string())
+            }
+            RedirectorError::ShortCodeMalformed(message) => Self::InvalidShortCode(message),
+            RedirectorError::ShortCodeNotFound => Self::NotFound,
+            RedirectorError::Storage(source) => {
+                let message = source.to_string();
+
                 if message.starts_with("storage backend unavailable:") {
                     Self::StorageUnavailable(message)
                 } else if message.starts_with("storage operation timed out:") {
