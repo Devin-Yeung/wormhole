@@ -6,7 +6,8 @@ use wormhole_redirector::redirector::Redirector;
 use wormhole_shortener::shortener::{ExpirationPolicy, ShortenParams, Shortener};
 
 use crate::backend::{
-    BackendError, GetUrlResult, Result, UrlRead, UrlWrite, WriteUrlCmd, WriteUrlResult,
+    BackendError, DeleteUrlCmd, GetUrlResult, Result, UrlRead, UrlWrite, WriteUrlCmd,
+    WriteUrlResult,
 };
 
 #[derive(Clone, TypedBuilder)]
@@ -75,8 +76,8 @@ impl UrlWrite for LocalUrlAdapter {
         })
     }
 
-    async fn delete(&self, short_code: &str) -> Result<()> {
-        let short_code = Self::parse_short_code(short_code)?;
+    async fn delete(&self, cmd: DeleteUrlCmd) -> Result<()> {
+        let short_code = Self::parse_short_code(&cmd.short_code)?;
         let deleted = self
             .shortener
             .delete(&short_code)
@@ -112,7 +113,7 @@ impl UrlRead for LocalUrlAdapter {
 
 #[cfg(test)]
 mod tests {
-    use crate::backend::{UrlRead, UrlWrite, WriteUrlCmd};
+    use crate::backend::{DeleteUrlCmd, UrlRead, UrlWrite, WriteUrlCmd};
     use wormhole_generator::seq::SeqGenerator;
     use wormhole_redirector::RedirectorService;
     use wormhole_shortener::service::ShortenerService;
@@ -150,7 +151,12 @@ mod tests {
         assert_eq!(get_response.original_url, "https://example.com");
 
         // delete the url
-        adapter.delete(&code).await.unwrap();
+        adapter
+            .delete(DeleteUrlCmd {
+                short_code: code.clone(),
+            })
+            .await
+            .unwrap();
 
         // try to get the url again, should be not found
         let get_response = adapter.get(&code).await;
