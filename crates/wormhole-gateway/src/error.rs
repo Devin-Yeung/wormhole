@@ -1,3 +1,4 @@
+use crate::backend::BackendError;
 use axum::http::StatusCode;
 use axum::response::{IntoResponse, Response};
 use axum::Json;
@@ -88,6 +89,20 @@ impl From<RedirectorError> for AppError {
                     Self::Internal(message)
                 }
             }
+        }
+    }
+}
+
+impl From<BackendError> for AppError {
+    fn from(error: BackendError) -> Self {
+        match error {
+            BackendError::InvalidUrl(message) => Self::InvalidUrl(message),
+            BackendError::InvalidShortCode(message) => Self::InvalidShortCode(message),
+            BackendError::NotFound => Self::NotFound,
+            BackendError::AliasConflict(code) => Self::AliasConflict(code),
+            BackendError::StorageUnavailable(message) => Self::StorageUnavailable(message),
+            BackendError::StorageTimeout(message) => Self::StorageTimeout(message),
+            BackendError::Internal(message) => Self::Internal(message),
         }
     }
 }

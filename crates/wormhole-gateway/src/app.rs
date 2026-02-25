@@ -13,7 +13,7 @@ impl App {
             .nest(
                 "/v1/urls",
                 Router::new().route("/", post(create_url_handler)).route(
-                    "/:short_code",
+                    "/{short_code}",
                     get(get_url_handler).delete(delete_url_handler),
                 ),
             )

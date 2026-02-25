@@ -5,9 +5,9 @@ use wormhole_core::ShortCode;
 use wormhole_redirector::redirector::Redirector;
 use wormhole_shortener::shortener::{ExpirationPolicy, ShortenParams, Shortener};
 
-use crate::error::{AppError, Result};
-use crate::model::{CreateUrlRequest, CreateUrlResponse, GetUrlResponse};
-use crate::port::{UrlReadPort, UrlWritePort};
+use crate::backend::{
+    BackendError, GetUrlResult, Result, UrlRead, UrlWrite, WriteUrlCmd, WriteUrlResult,
+};
 
 #[derive(Clone, TypedBuilder)]
 pub struct LocalUrlAdapter {
@@ -33,23 +33,24 @@ pub struct LocalUrlAdapter {
 
 impl LocalUrlAdapter {
     fn parse_short_code(short_code: &str) -> Result<ShortCode> {
-        ShortCode::custom(short_code).map_err(|error| AppError::InvalidShortCode(error.to_string()))
+        ShortCode::custom(short_code)
+            .map_err(|error| BackendError::InvalidShortCode(error.to_string()))
     }
 }
 
 #[async_trait]
-impl UrlWritePort for LocalUrlAdapter {
-    async fn create(&self, request: CreateUrlRequest) -> Result<CreateUrlResponse> {
-        let CreateUrlRequest {
+impl UrlWrite for LocalUrlAdapter {
+    async fn create(&self, cmd: WriteUrlCmd) -> Result<WriteUrlResult> {
+        let WriteUrlCmd {
             original_url,
             custom_alias,
             expire_at,
-        } = request;
+        } = cmd;
 
         let custom_alias = custom_alias
             .map(ShortCode::custom)
             .transpose()
-            .map_err(|error| AppError::InvalidShortCode(error.to_string()))?;
+            .map_err(|error| BackendError::InvalidShortCode(error.to_string()))?;
 
         let expiration = match expire_at {
             Some(expire_at) => ExpirationPolicy::AtTimestamp(expire_at),
@@ -64,9 +65,9 @@ impl UrlWritePort for LocalUrlAdapter {
                 custom_alias,
             })
             .await
-            .map_err(AppError::from)?;
+            .map_err(BackendError::from)?;
 
-        Ok(CreateUrlResponse {
+        Ok(WriteUrlResult {
             short_code: short_code.to_string(),
             short_url: short_code.to_url(&self.base_url),
             original_url,
@@ -80,29 +81,29 @@ impl UrlWritePort for LocalUrlAdapter {
             .shortener
             .delete(&short_code)
             .await
-            .map_err(AppError::from)?;
+            .map_err(BackendError::from)?;
 
         if deleted {
             Ok(())
         } else {
-            Err(AppError::NotFound)
+            Err(BackendError::NotFound)
         }
     }
 }
 
 #[async_trait]
-impl UrlReadPort for LocalUrlAdapter {
-    async fn get(&self, short_code: &str) -> Result<GetUrlResponse> {
+impl UrlRead for LocalUrlAdapter {
+    async fn get(&self, short_code: &str) -> Result<GetUrlResult> {
         let short_code = Self::parse_short_code(short_code)?;
 
         let record = self
             .redirector
             .resolve(&short_code)
             .await
-            .map_err(AppError::from)?
-            .ok_or(AppError::NotFound)?;
+            .map_err(BackendError::from)?
+            .ok_or(BackendError::NotFound)?;
 
-        Ok(GetUrlResponse {
+        Ok(GetUrlResult {
             original_url: record.original_url,
             expire_at: record.expire_at,
         })
@@ -111,8 +112,7 @@ impl UrlReadPort for LocalUrlAdapter {
 
 #[cfg(test)]
 mod tests {
-    use crate::model::CreateUrlRequest;
-    use crate::port::{UrlReadPort, UrlWritePort};
+    use crate::backend::{UrlRead, UrlWrite, WriteUrlCmd};
     use wormhole_generator::seq::SeqGenerator;
     use wormhole_redirector::RedirectorService;
     use wormhole_shortener::service::ShortenerService;
@@ -134,7 +134,7 @@ mod tests {
 
         // put a url
         let create_response = adapter
-            .create(CreateUrlRequest {
+            .create(WriteUrlCmd {
                 original_url: "https://example.com".to_string(),
                 custom_alias: None,
                 expire_at: None,
