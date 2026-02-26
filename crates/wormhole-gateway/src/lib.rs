@@ -1,7 +1,8 @@
-mod adapter;
-mod app;
+pub mod adapter;
+pub mod app;
 pub mod backend;
-mod error;
-mod handlers;
+pub mod cli;
+pub mod error;
+pub mod handlers;
 pub mod model;
-mod state;
+pub mod state;

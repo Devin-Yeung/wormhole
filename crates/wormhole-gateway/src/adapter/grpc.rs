@@ -7,6 +7,7 @@
 
 use async_trait::async_trait;
 use tonic::transport::Channel;
+use typed_builder::TypedBuilder;
 use wormhole_proto_schema::v1 as proto;
 use wormhole_proto_schema::v1::redirector_service_client::RedirectorServiceClient;
 use wormhole_proto_schema::v1::shortener_service_client::ShortenerServiceClient;
@@ -27,10 +28,13 @@ use crate::backend::{
 /// `UrlWrite` and `UrlRead` into gRPC requests to the respective services:
 /// - `UrlWrite` operations (create, delete) → ShortenerService
 /// - `UrlRead` operations (get, resolve) → RedirectorService
+#[derive(TypedBuilder)]
 pub struct GrpcUrlAdapter {
     /// gRPC client for the shortener service (write operations).
+    #[builder]
     shortener: ShortenerServiceClient<Channel>,
     /// gRPC client for the redirector service (read operations).
+    #[builder]
     redirector: RedirectorServiceClient<Channel>,
 }
 
@@ -148,51 +152,5 @@ impl UrlRead for GrpcUrlAdapter {
             original_url: url_record.original_url,
             expire_at,
         })
-    }
-}
-
-// ==============================================================================
-// Builder for Connection Management
-// ==============================================================================
-
-/// Builder for creating a `GrpcUrlAdapter` with proper connection management.
-#[derive(Clone)]
-pub struct GrpcUrlAdapterBuilder {
-    shortener_addr: String,
-    redirector_addr: String,
-}
-
-impl GrpcUrlAdapterBuilder {
-    pub fn new() -> Self {
-        Self {
-            shortener_addr: "http://localhost:50051".to_string(),
-            redirector_addr: "http://localhost:50052".to_string(),
-        }
-    }
-
-    /// Set the shortener service address.
-    pub fn shortener_addr(mut self, addr: impl Into<String>) -> Self {
-        self.shortener_addr = addr.into();
-        self
-    }
-
-    /// Set the redirector service address.
-    pub fn redirector_addr(mut self, addr: impl Into<String>) -> Self {
-        self.redirector_addr = addr.into();
-        self
-    }
-
-    /// Connect to both services and build the adapter.
-    pub async fn build(self) -> std::result::Result<GrpcUrlAdapter, tonic::transport::Error> {
-        let shortener = ShortenerServiceClient::connect(self.shortener_addr).await?;
-        let redirector = RedirectorServiceClient::connect(self.redirector_addr).await?;
-
-        Ok(GrpcUrlAdapter::new(shortener, redirector))
-    }
-}
-
-impl Default for GrpcUrlAdapterBuilder {
-    fn default() -> Self {
-        Self::new()
     }
 }
