@@ -10,6 +10,7 @@ wormhole-shortener = { workspace = true }
 wormhole-redirector = { workspace = true }
 wormhole-storage = { workspace = true }
 wormhole-generator = { workspace = true }
+wormhole-proto-schema = { workspace = true }
 # async runtime
 tokio = { workspace = true }
 # tracing
@@ -22,3 +23,7 @@ tower = { version = "0.5", features = ["util"] }
 jiff = { workspace = true, features = ["serde"] }
 typed-builder = { workspace = true }
 async-trait = { workspace = true }
+# gRPC
+tonic = { workspace = true }
+prost = { workspace = true }
+prost-types = { workspace = true }
