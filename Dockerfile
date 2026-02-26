@@ -14,6 +14,7 @@ RUN nix \
     build \
     '.#wormhole-redirector' \
     '.#wormhole-shortener' \
+    '.#wormhole-gateway' \
     'nixpkgs#bash'
 
 # TODO: remove bash in production

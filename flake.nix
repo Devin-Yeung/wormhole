@@ -59,6 +59,14 @@
 
         cargoArtifacts = craneLib.buildDepsOnly commonArgs;
 
+        wormhole-gateway = craneLib.buildPackage (
+          commonArgs
+          // {
+            inherit cargoArtifacts;
+            pname = "wormhole-gateway";
+            cargoExtraArgs = "-p wormhole-gateway";
+          }
+        );
         # redirector service
         wormhole-redirector = craneLib.buildPackage (
           commonArgs
@@ -121,7 +129,7 @@
         };
 
         packages = {
-          inherit wormhole-redirector wormhole-shortener;
+          inherit wormhole-redirector wormhole-shortener wormhole-gateway;
         };
       }
     );

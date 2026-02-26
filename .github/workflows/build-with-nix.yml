@@ -51,6 +51,7 @@ jobs:
         pkg:
           - wormhole-redirector
           - wormhole-shortener
+          - wormhole-gateway
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout tree
