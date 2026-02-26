@@ -18,7 +18,7 @@ wormhole-tinyflake = { workspace = true }
 # Async
 async-trait = { workspace = true }
 tokio = { workspace = true }
-clap = { version = "4.5.31", features = ["derive", "env"] }
+clap = { workspace = true, features = ["derive", "env"] }
 # Time
 jiff = { workspace = true }
 # gRPC

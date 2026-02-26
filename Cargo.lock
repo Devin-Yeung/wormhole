@@ -3952,12 +3952,15 @@ name = "wormhole-redirector"
 version = "0.1.0"
 dependencies = [
  "async-trait",
+ "clap",
  "jiff",
  "prost-types",
+ "redis 1.0.3",
  "thiserror",
  "tokio",
  "tonic",
  "tracing",
+ "tracing-subscriber",
  "wormhole-cache",
  "wormhole-core",
  "wormhole-proto-schema",
