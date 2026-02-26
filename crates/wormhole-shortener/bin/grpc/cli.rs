@@ -43,5 +43,6 @@ pub struct CLI {
     pub storage: StorageBackendArg,
 
     #[arg(long, env = MYSQL_DSN_ENV, required_if_eq("storage", "mysql"))]
+    /// MySQL DSN, e.g. "mysql://user:password@host:port/database"
     pub mysql_dsn: Option<String>,
 }
