@@ -37,3 +37,6 @@ devenv.local.yaml
 
 # nix build
 result*
+
+# env
+.env*
