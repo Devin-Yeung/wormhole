@@ -3,6 +3,11 @@ version = "0.1.0"
 edition = "2021"
 license = "MIT OR Apache-2.0"
 
+# Required by crane for workspace-only Cargo.toml (no root package)
+# Individual packages are built via pname override in flake.nix
+[workspace.metadata.crane]
+name = "wormhole"
+
 [workspace]
 resolver = "2"
 members = ["crates/*"]
