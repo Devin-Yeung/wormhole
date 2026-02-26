@@ -36,4 +36,4 @@ devenv.local.yaml
 .worktrees/
 
 # nix build
-result
+result*
