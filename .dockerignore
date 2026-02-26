@@ -1,0 +1,9 @@
+# itself
+.dockerignore
+Dockerfile
+
+# version control
+.git
+
+# nix related
+result*

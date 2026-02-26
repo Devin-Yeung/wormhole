@@ -1,0 +1,41 @@
+# Credit to: https://mitchellh.com/writing/nix-with-dockerfiles
+
+# Nix builder
+FROM nixos/nix:latest AS builder
+
+# Copy our source and setup our working dir.
+COPY . /tmp/build
+WORKDIR /tmp/build
+
+# Build our Nix environment
+RUN nix \
+    --extra-experimental-features "nix-command flakes" \
+    --option filter-syscalls false \
+    build \
+    '.#wormhole-redirector' \
+    '.#wormhole-shortener' \
+    'nixpkgs#bash'
+
+# TODO: remove bash in production
+
+# Copy the Nix store closure into a directory. The Nix store closure is the
+# entire set of Nix store values that we need for our build.
+RUN mkdir /tmp/nix-store-closure
+# nix build results are named result-1, result-2, etc. we want to copy all of them, so we use a wildcard.
+RUN cp -R $(nix-store -qR result*) /tmp/nix-store-closure
+
+# Final image is based on scratch. We copy a bunch of Nix dependencies
+# but they're fully self-contained so we don't need Nix anymore.
+FROM scratch
+
+WORKDIR /app
+
+# help bash find its dependencies
+ENV PATH="/app/bin:${PATH}"
+
+# Copy /nix/store
+COPY --from=builder /tmp/nix-store-closure /nix/store
+# Copy our built binaries. The result* files are symlinks to the actual binaries in the Nix store, so we need to copy them as well.
+COPY --from=builder /tmp/build/result* /app
+
+CMD ["bash"]
