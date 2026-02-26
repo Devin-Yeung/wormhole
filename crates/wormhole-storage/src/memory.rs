@@ -29,7 +29,7 @@ impl Entry {
 
 /// In-memory implementation of the Repository trait using DashMap.
 ///
-/// DashMap provides better concurrency than RwLock<HashMap> because it
+/// DashMap provides better concurrency than `RwLock<HashMap>` because it
 /// uses sharded locks, allowing concurrent reads and writes to different
 /// buckets without blocking.
 #[derive(Debug, Clone)]
