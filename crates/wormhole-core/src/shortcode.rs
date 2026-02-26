@@ -31,18 +31,20 @@ const MAX_LENGTH: usize = 32;
 impl ShortCode {
     /// Creates a `ShortCode` from a value that can be converted into [`ShortCodeBase58`].
     ///
-    /// This accepts a [`ShortCodeBase58`] directly, or a [`SlimId`] which will be
+    /// This accepts a [`ShortCodeBase58`] directly, or a [`TinyId`][wormhole_tinyflake::TinyId] which will be
     /// automatically encoded as base58.
     ///
     /// # Examples
     ///
     /// ```ignore
-    /// // From a SlimId
-    /// let slim_id = SlimId::new().with_timestamp(12345).with_sequence(1);
-    /// let code = ShortCode::generated(slim_id);
+    /// // From a TinyId
+    /// use wormhole_tinyflake::TinyId;
+    /// let tiny_id = TinyId::from_timestamp(12345);
+    /// let code = ShortCode::generated(tiny_id);
     ///
     /// // From ShortCodeBase58
-    /// let base58 = ShortCodeBase58::new(bytes);
+    /// use wormhole_core::base58::ShortCodeBase58;
+    /// let base58 = ShortCodeBase58::new(b"abc12345");
     /// let code = ShortCode::generated(base58);
     /// ```
     pub fn generated(code: impl Into<ShortCodeBase58>) -> Self {

@@ -25,7 +25,7 @@ impl<R: ReadRepository, C: UrlCache> CachedRepository<R, C> {
     /// # Arguments
     ///
     /// * `inner` - The underlying read-only repository implementation
-    /// * `cache` - The cache implementation (e.g., [`MokaUrlCache`])
+    /// * `cache` - The cache implementation (e.g., [`wormhole_cache::MokaUrlCache`])
     ///
     /// # Example
     ///

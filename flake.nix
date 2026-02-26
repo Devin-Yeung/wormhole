@@ -39,6 +39,7 @@
             ./Cargo.lock
             (craneLib.fileset.commonCargoSources unfilteredRoot)
             (lib.fileset.fileFilter (file: file.hasExt "proto") unfilteredRoot)
+            (lib.fileset.fileFilter (file: file.hasExt "sql") unfilteredRoot)
           ];
         };
 

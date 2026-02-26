@@ -13,17 +13,16 @@ impl ShortCodeBase58 {
     /// # Type Parameters
     ///
     /// * `T` - A type that can be referenced as a byte slice (e.g., `[u8]`, `Vec<u8>`,
-    ///   or the 8-byte array returned by [`SlimId::into_bytes`][crate::slim_id::SlimId]).
+    ///   or the 8-byte array returned by [`TinyId::into_bytes`][wormhole_tinyflake::TinyId]).
     ///
     /// # Examples
     ///
     /// ```ignore
-    /// use wormhole_core::base58::ShortCodeBase58;
-    /// use wormhole_core::slim_id::SlimId;
+    /// use wormhole_tinyflake::TinyId;
     ///
-    /// // From SlimId bytes
-    /// let slim_id = SlimId::new().with_timestamp(12345);
-    /// let base58 = ShortCodeBase58::new(slim_id.into_bytes());
+    /// // From TinyId bytes
+    /// let tiny_id = TinyId::from_timestamp(12345);
+    /// let base58 = ShortCodeBase58::new(tiny_id.into_bytes());
     /// ```
     pub fn new<T: AsRef<[u8]>>(bytes: T) -> Self {
         let encoded = bs58::encode(bytes).into_string();
