@@ -6,7 +6,7 @@ pub const LISTEN_ADDR_ENV: &str = "WORMHOLE_SHORTENER_GRPC_LISTEN_ADDR";
 pub const STORAGE_BACKEND_ENV: &str = "WORMHOLE_SHORTENER_STORAGE_BACKEND";
 pub const MYSQL_DSN_ENV: &str = "WORMHOLE_SHORTENER_MYSQL_DSN";
 pub const GENERATOR_NODE_ID: &str = "WORMHOLE_SHORTENER_GENERATOR_NODE_ID";
-pub const DEFAULT_LISTEN_ADDR: &str = "127.0.0.1:50051";
+pub const DEFAULT_LISTEN_ADDR: &str = "0.0.0.0:50051";
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, ValueEnum)]
 pub enum StorageBackendArg {
