@@ -3,7 +3,7 @@ use crate::Result;
 
 pub struct RedisHA {
     config: RedisHAConfig,
-    master: RedisMaster,
+    _master: RedisMaster,
     replicas: Vec<RedisReplica>,
     sentinel: Vec<RedisSentinel>,
 }
@@ -31,7 +31,7 @@ impl RedisHA {
 
         Ok(Self {
             config,
-            master,
+            _master: master,
             replicas,
             sentinel: sentinels,
         })
