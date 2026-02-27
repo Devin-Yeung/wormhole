@@ -22,6 +22,8 @@ pub enum StorageError {
     Cache(#[from] CacheError),
     #[error("storage operation failed: {0}")]
     Operation(String),
+    #[error("unknown storage error: {0}")]
+    Unknown(String),
 }
 
 impl From<StorageError> for Status {
@@ -31,6 +33,7 @@ impl From<StorageError> for Status {
             StorageError::Timeout(_) => (Code::DeadlineExceeded, "storage operation timed out"),
             StorageError::Conflict(_) => (Code::AlreadyExists, "short code already exists"),
             StorageError::InvalidData(_)
+            | StorageError::Unknown(_)
             | StorageError::Query(_)
             | StorageError::Cache(_)
             | StorageError::Operation(_) => (Code::Internal, "storage operation failed"),

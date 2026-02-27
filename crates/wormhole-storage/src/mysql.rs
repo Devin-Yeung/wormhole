@@ -30,6 +30,15 @@ impl MySqlRepository {
         Ok(Self::new(pool))
     }
 
+    pub async fn migrate(&self) -> Result<()> {
+        sqlx::migrate!("ddl/mysql")
+            .run(&self.pool)
+            .await
+            .map_err(|e| StorageError::Unknown(format!("failed to run migrations: {e}")))?;
+
+        Ok(())
+    }
+
     /// Returns a reference to the underlying pool.
     pub fn pool(&self) -> &MySqlPool {
         &self.pool

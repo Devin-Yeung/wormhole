@@ -58,6 +58,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 .mysql_dsn
                 .ok_or("mysql dsn is required when storage backend is mysql")?;
             let repository = MySqlRepository::connect(&mysql_dsn).await?;
+            // do the migration before starting the server
+            repository.migrate().await?;
             run_server(config.listen_addr, repository, generator).await?;
         }
     }

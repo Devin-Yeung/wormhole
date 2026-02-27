@@ -39,6 +39,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Create MySQL repository
     let inner = MySqlRepository::connect(&config.mysql_dsn).await?;
+    // do the migration before starting the server
+    inner.migrate().await?;
 
     // Wrap with caching layer
     let repository = CachedRepository::new(inner, cache);
