@@ -5,7 +5,7 @@ edition.workspace = true
 license.workspace = true
 
 [[bin]]
-name = "wormhole-redirector-grpc-server"
+name = "redirector"
 path = "bin/grpc/main.rs"
 
 
