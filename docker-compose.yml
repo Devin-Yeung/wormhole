@@ -1,0 +1,57 @@
+services:
+  redis:
+    image: redis:latest
+    container_name: wormhole-redis
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+  mysql:
+    image: mysql:latest
+    container_name: wormhole-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: wormhole
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot_password"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    volumes:
+      - mysql_data:/var/lib/mysql
+  shortener:
+    image: ghcr.io/devin-yeung/wormhole:latest
+    container_name: wormhole-shortener
+    command: shortener
+    environment:
+      - WORMHOLE_SHORTENER_STORAGE_BACKEND=mysql
+      - WORMHOLE_SHORTENER_MYSQL_DSN=mysql://root:root@mysql:3306/wormhole
+      - WORMHOLE_SHORTENER_GENERATOR_NODE_ID=0
+    depends_on:
+      mysql:
+        condition: service_healthy
+  redirector:
+    image: ghcr.io/devin-yeung/wormhole:latest
+    container_name: wormhole-redirector
+    command: redirector
+    environment:
+      - WORMHOLE_REDIRECTOR_REDIS_URL=redis://redis:6379
+      - WORMHOLE_REDIRECTOR_MYSQL_DSN=mysql://root:root@mysql:3306/wormhole
+    depends_on:
+      - redis
+      - mysql
+  gateway:
+    image: ghcr.io/devin-yeung/wormhole:latest
+    container_name: wormhole-gateway
+    command: gateway
+    ports:
+      - "8080:8080"
+    environment:
+      - WORMHOLE_GATEWAY_SHORTENER_ADDR=http://shortener:50051
+      - WORMHOLE_GATEWAY_REDIRECTOR_ADDR=http://redirector:50052
+    depends_on:
+      - shortener
+      - redirector
+volumes:
+  redis_data:
+  mysql_data:
