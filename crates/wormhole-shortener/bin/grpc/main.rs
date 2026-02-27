@@ -74,7 +74,10 @@ async fn run_server<R: Repository, G: Generator>(
 ) -> Result<(), tonic::transport::Error> {
     let service = ShortenerGrpcServer::new(repository, generator);
 
+    let (_, health_service) = tonic_health::server::health_reporter();
+
     Server::builder()
+        .add_service(health_service)
         .add_service(ShortenerServiceServer::new(service))
         .serve(listen_addr)
         .await

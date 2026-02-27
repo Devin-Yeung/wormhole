@@ -18,7 +18,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     tracing_subscriber::registry()
         .with(
             tracing_subscriber::EnvFilter::try_from_default_env()
-                .unwrap_or_else(|_| "info".to_string().into()),
+                .unwrap_or_else(|_| "debug".to_string().into()),
         )
         .with(tracing_subscriber::fmt::layer().json())
         .init();
@@ -48,7 +48,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let service = RedirectorService::new(repository);
     let grpc_server = RedirectorGrpcServer::new(service);
 
+    let (_, health_service) = tonic_health::server::health_reporter();
+
     Server::builder()
+        .add_service(health_service)
         .add_service(RedirectorServiceServer::new(grpc_server))
         .serve(config.listen_addr)
         .await?;

@@ -27,6 +27,12 @@ services:
       - WORMHOLE_SHORTENER_STORAGE_BACKEND=mysql
       - WORMHOLE_SHORTENER_MYSQL_DSN=mysql://root:root@mysql:3306/wormhole
       - WORMHOLE_SHORTENER_GENERATOR_NODE_ID=0
+    healthcheck:
+      test: ["CMD", "grpc-health-probe", "-addr=:50051"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
     depends_on:
       mysql:
         condition: service_healthy
@@ -37,9 +43,17 @@ services:
     environment:
       - WORMHOLE_REDIRECTOR_REDIS_URL=redis://redis:6379
       - WORMHOLE_REDIRECTOR_MYSQL_DSN=mysql://root:root@mysql:3306/wormhole
+    healthcheck:
+      test: ["CMD", "grpc-health-probe", "-addr=:50052"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
     depends_on:
-      - redis
-      - mysql
+      redis:
+        condition: service_started
+      mysql:
+        condition: service_healthy
   gateway:
     image: ghcr.io/devin-yeung/wormhole:latest
     container_name: wormhole-gateway
@@ -50,8 +64,10 @@ services:
       - WORMHOLE_GATEWAY_SHORTENER_ADDR=http://shortener:50051
       - WORMHOLE_GATEWAY_REDIRECTOR_ADDR=http://redirector:50052
     depends_on:
-      - shortener
-      - redirector
+      shortener:
+        condition: service_healthy
+      redirector:
+        condition: service_healthy
 volumes:
   redis_data:
   mysql_data:

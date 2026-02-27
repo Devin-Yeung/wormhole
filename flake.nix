@@ -122,6 +122,7 @@
             wormhole-gateway
             wormhole-redirector
             wormhole-shortener
+            pkgs.grpc-health-probe
           ];
 
           config = {

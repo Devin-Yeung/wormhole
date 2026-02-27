@@ -24,6 +24,7 @@ jiff = { workspace = true }
 # gRPC
 tonic = { workspace = true }
 prost-types = { workspace = true }
+tonic-health = { workspace = true }
 # Tracing
 tracing = { workspace = true }
 tracing-subscriber = { workspace = true, features = ["json", "env-filter"] }

@@ -37,4 +37,5 @@ tracing = { workspace = true }
 
 # gRPC
 tonic = { workspace = true }
+tonic-health = { workspace = true }
 prost-types = { workspace = true }
