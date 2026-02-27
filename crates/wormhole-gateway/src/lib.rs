@@ -1,7 +1,6 @@
 pub mod adapter;
 pub mod app;
 pub mod backend;
-pub mod cli;
 pub mod error;
 pub mod handlers;
 pub mod model;

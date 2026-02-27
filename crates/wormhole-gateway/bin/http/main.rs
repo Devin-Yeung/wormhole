@@ -1,10 +1,11 @@
 //! Main entry point for the gateway HTTP server.
+mod cli;
 
 use wormhole_gateway::adapter::grpc::GrpcUrlAdapter;
 use wormhole_gateway::app::App;
-use wormhole_gateway::cli::CLI;
 use wormhole_gateway::state::AppState;
 
+use crate::cli::CLI;
 use clap::Parser;
 use tonic::transport::Endpoint;
 use tracing::info;

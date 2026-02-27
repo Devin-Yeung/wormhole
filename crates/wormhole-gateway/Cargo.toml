@@ -3,6 +3,10 @@ name = "wormhole-gateway"
 version.workspace = true
 edition.workspace = true
 
+[[bin]]
+name = "gateway"
+path = "bin/http/main.rs"
+
 [dependencies]
 # workspace members
 wormhole-core = { workspace = true }
