@@ -85,10 +85,26 @@
             cargoExtraArgs = "-p wormhole-shortener";
           }
         );
+
+        image = pkgs.dockerTools.buildLayeredImage {
+          name = "wormhole";
+          tag = "latest";
+
+          contents = [
+            wormhole-gateway
+            wormhole-redirector
+            wormhole-shortener
+          ];
+
+          config = {
+            Cmd = [ ];
+            WorkingDir = "/tmp";
+          };
+        };
       in
       {
         checks = {
-          inherit wormhole-redirector wormhole-shortener;
+          inherit wormhole-redirector wormhole-shortener wormhole-gateway;
 
           wormhole-clippy = craneLib.cargoClippy (
             commonArgs
@@ -129,7 +145,12 @@
         };
 
         packages = {
-          inherit wormhole-redirector wormhole-shortener wormhole-gateway;
+          inherit
+            wormhole-redirector
+            wormhole-shortener
+            wormhole-gateway
+            image
+            ;
         };
       }
     );
