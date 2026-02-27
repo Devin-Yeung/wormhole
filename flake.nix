@@ -32,57 +32,85 @@
         inherit (pkgs) lib;
 
         unfilteredRoot = ./.;
-        src = lib.fileset.toSource {
-          root = unfilteredRoot;
-          fileset = lib.fileset.unions [
-            ./Cargo.toml
-            ./Cargo.lock
-            (craneLib.fileset.commonCargoSources unfilteredRoot)
-            (lib.fileset.fileFilter (file: file.hasExt "proto") unfilteredRoot)
-            (lib.fileset.fileFilter (file: file.hasExt "sql") unfilteredRoot)
-          ];
-        };
+        src = craneLib.cleanCargoSource unfilteredRoot;
 
+        # Common arguments can be set here to avoid repeating them later
         commonArgs = {
           inherit src;
-          pname = "wormhole";
           strictDeps = true;
 
           nativeBuildInputs = with pkgs; [
             protobuf
           ];
 
-          buildInputs = lib.optionals pkgs.stdenv.isDarwin [
-            pkgs.libiconv
-          ];
+          buildInputs =
+            [ ]
+            ++ lib.optionals pkgs.stdenv.isDarwin [
+              pkgs.libiconv
+            ];
+        };
+
+        commonArgsExtra = commonArgs // {
+          src = lib.fileset.toSource {
+            root = unfilteredRoot;
+            fileset = lib.fileset.unions [
+              (craneLib.fileset.commonCargoSources unfilteredRoot)
+              (lib.fileset.fileFilter (file: file.hasExt "proto") unfilteredRoot)
+              (lib.fileset.fileFilter (file: file.hasExt "sql") unfilteredRoot)
+            ];
+          };
         };
 
         cargoArtifacts = craneLib.buildDepsOnly commonArgs;
 
+        individualCrateArgs = commonArgs // {
+          inherit cargoArtifacts;
+          inherit (craneLib.crateNameFromCargoToml { inherit src; }) version;
+          # NB: we disable tests since we'll run them all via cargo-nextest
+          doCheck = false;
+        };
+
+        fileSetForCrate =
+          crate:
+          lib.fileset.toSource {
+            root = unfilteredRoot;
+            fileset = lib.fileset.unions [
+              ./Cargo.toml
+              ./Cargo.lock
+              (craneLib.fileset.commonCargoSources unfilteredRoot)
+              (lib.fileset.fileFilter (file: file.hasExt "proto") unfilteredRoot)
+              (lib.fileset.fileFilter (file: file.hasExt "sql") unfilteredRoot)
+            ];
+          };
+
+        # gateway
         wormhole-gateway = craneLib.buildPackage (
-          commonArgs
+          individualCrateArgs
           // {
             inherit cargoArtifacts;
             pname = "wormhole-gateway";
             cargoExtraArgs = "-p wormhole-gateway";
+            src = fileSetForCrate ./crates/wormhole-gateway;
           }
         );
         # redirector service
         wormhole-redirector = craneLib.buildPackage (
-          commonArgs
+          individualCrateArgs
           // {
             inherit cargoArtifacts;
             pname = "wormhole-redirector";
             cargoExtraArgs = "-p wormhole-redirector";
+            src = fileSetForCrate ./crates/wormhole-redirector;
           }
         );
         # shortener service
         wormhole-shortener = craneLib.buildPackage (
-          commonArgs
+          individualCrateArgs
           // {
             inherit cargoArtifacts;
             pname = "wormhole-shortener";
             cargoExtraArgs = "-p wormhole-shortener";
+            src = fileSetForCrate ./crates/wormhole-shortener;
           }
         );
 
@@ -112,17 +140,18 @@
             ;
 
           wormhole-clippy = craneLib.cargoClippy (
-            commonArgs
+            commonArgsExtra
             // {
               inherit cargoArtifacts;
-              # we are in active development, so we don't want to fail the check on warnings, but we still want to see them
+              # we are in active development, so we don't want to fail
+              # the check on warnings, but we still want to see them
               cargoClippyExtraArgs = "--all-targets";
               # cargoClippyExtraArgs = "--all-targets -- --deny warnings";
             }
           );
 
           wormhole-doc = craneLib.cargoDoc (
-            commonArgs
+            commonArgsExtra
             // {
               inherit cargoArtifacts;
               env.RUSTDOCFLAGS = "--deny warnings";
