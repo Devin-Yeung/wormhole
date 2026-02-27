@@ -1,3 +1,4 @@
+-- Add migration script here
 CREATE TABLE IF NOT EXISTS short_urls
 (
     short_code   VARCHAR(32) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,

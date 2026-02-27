@@ -19,10 +19,10 @@ impl Fixture {
         let url = mysql.database_url().await.expect("mysql url");
         let pool = connect_with_retry(&url).await;
 
-        sqlx::query(include_str!("../ddl/mysql/short_urls.sql"))
-            .execute(&pool)
+        sqlx::migrate!("ddl/mysql")
+            .run(&pool)
             .await
-            .expect("create schema");
+            .expect("migrations should run successfully");
 
         Self {
             _mysql: mysql,

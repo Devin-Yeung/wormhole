@@ -59,8 +59,5 @@ bs58 = { version = "0.5.1" }
 # Redis
 redis = { version = "1.0.3", features = ["aio", "tokio-comp"] }
 
-# MySQL
-sqlx = { version = "0.8.6", default-features = false }
-
 # CLI parsing
 clap = { version = "4.5.31" }

@@ -21,7 +21,11 @@ async-trait = { workspace = true }
 dashmap = "6"
 
 # MySQL
-sqlx = { workspace = true, features = ["mysql", "runtime-tokio-rustls"] }
+sqlx = { version = "0.8.6", features = [
+  "mysql",
+  "runtime-tokio-rustls",
+  "migrate",
+] }
 
 # Serialization
 serde = { workspace = true, features = ["derive"] }
