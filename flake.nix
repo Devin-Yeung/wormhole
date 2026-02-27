@@ -104,7 +104,12 @@
       in
       {
         checks = {
-          inherit wormhole-redirector wormhole-shortener wormhole-gateway;
+          inherit
+            wormhole-redirector
+            wormhole-shortener
+            wormhole-gateway
+            image
+            ;
 
           wormhole-clippy = craneLib.cargoClippy (
             commonArgs
