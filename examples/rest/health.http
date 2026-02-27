@@ -1,0 +1,9 @@
+GET http://localhost:8080/health
+
+> {%
+    client.test("Health Check", function () {
+        client.assert(
+            response.body.status === "ok",
+        )
+    });
+%}

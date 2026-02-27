@@ -1,0 +1,22 @@
+### Create a short URL for the given original URL
+POST http://localhost:8080/v1/urls
+Content-Type: application/json
+
+{
+  "original_url": "https://www.youtube.com"
+}
+
+> {%
+    client.global.set("short_code", response.body.short_code)
+%}
+
+#### Get the original URL for the given short URL
+GET http://localhost:8080/v1/urls/{{short_code}}
+
+> {%
+    client.test("Retrieve Correct Url", function () {
+        client.assert(
+            response.body.original_url === "https://www.youtube.com",
+        )
+    });
+%}

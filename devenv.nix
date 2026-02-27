@@ -15,6 +15,10 @@
     cargo-machete
     cargo-nextest
     cargo-modules
+    sqlx-cli
+    ijhttp
+    hurl
+    grpc-health-probe
     grpcurl
     protobuf
     iredis
