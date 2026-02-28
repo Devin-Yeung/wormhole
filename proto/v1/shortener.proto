@@ -1,9 +1,10 @@
 syntax = "proto3";
 
 package shortener.v1;
+option go_package = "github.com/Devin-Yeung/wormhole/analytics/pb";
 
 import "google/protobuf/timestamp.proto";
-import "shortcode.proto";
+import "v1/shortcode.proto";
 
 service ShortenerService {
   // Creates a short URL for the given original URL.

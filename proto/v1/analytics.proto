@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package analytics.v1;
+option go_package = "github.com/Devin-Yeung/wormhole/analytics/pb";
+
+message UrlRedirectedEvent {
+  // Unique identifier for the event.
+  string event_id = 1;
+  // The short code that was accessed.
+  string short_code = 2;
+  // Timestamp of when the click occurred, in milliseconds since epoch.
+  int64 clicked_at_ms = 3;
+  // IP address of the visitor.
+  string visitor_ip = 4;
+  // User agent string of the visitor's browser or client.
+  string user_agent = 5;
+  // The referer URL, if available, indicating the source of the traffic.
+  string referer = 6;
+}

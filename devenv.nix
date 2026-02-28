@@ -11,6 +11,10 @@
 
   dotenv.disableHint = true;
 
+  overlays = [
+    inputs.gomod2nix.overlays.default
+  ];
+
   # https://devenv.sh/packages/
   packages = with pkgs; [
     cargo-deny
@@ -23,6 +27,9 @@
     grpc-health-probe
     grpcurl
     protobuf
+    protoc-gen-go
+    protoc-gen-go-grpc
+    gomod2nix
     iredis
     mycli
     lnav
