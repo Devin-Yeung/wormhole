@@ -5,6 +5,11 @@
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
     crane.url = "github:ipetkov/crane";
     flake-utils.url = "github:numtide/flake-utils";
+    gomod2nix = {
+      url = "github:nix-community/gomod2nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.flake-utils.follows = "flake-utils";
+    };
     rust-overlay = {
       url = "github:oxalica/rust-overlay";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -16,6 +21,7 @@
       nixpkgs,
       crane,
       flake-utils,
+      gomod2nix,
       rust-overlay,
       ...
     }:
@@ -30,6 +36,9 @@
           p: p.rust-bin.fromRustupToolchainFile ./rust-toolchain.toml
         );
         inherit (pkgs) lib;
+
+        # helper to build Go applications using gomod2nix
+        buildGoApplication = gomod2nix.legacyPackages.${system}.buildGoApplication;
 
         unfilteredRoot = ./.;
         src = craneLib.cleanCargoSource unfilteredRoot;
@@ -114,6 +123,18 @@
           }
         );
 
+        wormhole-analytics = buildGoApplication {
+          pname = "wormhole-analytics";
+          version = "0.1.0";
+          src = ./analytics;
+          modules = ./analytics/gomod2nix.toml;
+          subPackages = [ "cmd/server" ];
+          go = pkgs.go_1_25;
+          postInstall = ''
+            mv $out/bin/server $out/bin/analytics
+          '';
+        };
+
         image = pkgs.dockerTools.buildLayeredImage {
           name = "wormhole";
           tag = "latest";
@@ -184,6 +205,7 @@
             wormhole-redirector
             wormhole-shortener
             wormhole-gateway
+            wormhole-analytics
             image
             ;
         };
