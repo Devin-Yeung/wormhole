@@ -1,6 +1,9 @@
+use glob::glob;
+
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    tonic_prost_build::compile_protos("proto/v1/shortener.proto")?;
-    tonic_prost_build::compile_protos("proto/v1/redirector.proto")?;
-    tonic_prost_build::compile_protos("proto/v1/shortcode.proto")?;
+    for entry in glob("../../proto/**/*.proto")? {
+        let path = entry?;
+        tonic_prost_build::compile_protos(path)?;
+    }
     Ok(())
 }
