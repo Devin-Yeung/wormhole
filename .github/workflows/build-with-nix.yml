@@ -52,6 +52,7 @@ jobs:
           - wormhole-redirector
           - wormhole-shortener
           - wormhole-gateway
+          - wormhole-analytics
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout tree

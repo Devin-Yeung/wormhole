@@ -158,6 +158,7 @@
             wormhole-redirector
             wormhole-shortener
             wormhole-gateway
+            wormhole-analytics
             image
             ;
 
