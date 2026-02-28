@@ -9,6 +9,8 @@
 {
   env.PROTOC = lib.getExe pkgs.protobuf;
 
+  dotenv.disableHint = true;
+
   # https://devenv.sh/packages/
   packages = with pkgs; [
     cargo-deny
