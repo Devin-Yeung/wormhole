@@ -51,12 +51,42 @@ cargo deny check
 
 ## Running Services
 
-```bash
-# Run the gateway HTTP server
-cargo run -p wormhole-gateway
+Wormhole consists of three services that communicate via gRPC. For local development, run all three in separate terminals:
 
-# Run with custom configuration (if supported)
-RUST_LOG=debug cargo run -p wormhole-gateway
+```bash
+# Terminal 1: Start the shortener service (creates/shortens URLs)
+cargo run -p wormhole-shortener
+
+# Terminal 2: Start the redirector service (resolves/redirects URLs)
+cargo run -p wormhole-redirector
+
+# Terminal 3: Start the gateway HTTP server
+cargo run -p wormhole-gateway
+```
+
+The gateway listens on port 8080 by default.
+
+## API Examples
+
+```bash
+# Health check
+curl http://localhost:8080/health
+
+# Create short URL (auto-generated code)
+curl -X POST http://localhost:8080/v1/urls \
+  -H "Content-Type: application/json" \
+  -d '{"original_url": "https://rust-lang.org"}'
+
+# Create short URL with custom alias
+curl -X POST http://localhost:8080/v1/urls \
+  -H "Content-Type: application/json" \
+  -d '{"original_url": "https://docs.rs/tokio", "custom_alias": "tokio-docs"}'
+
+# Get URL metadata
+curl http://localhost:8080/v1/urls/tokio-docs
+
+# Delete short URL
+curl -X DELETE http://localhost:8080/v1/urls/tokio-docs
 ```
 
 ## Development Commands
@@ -75,6 +105,21 @@ Infrastructure Docker Compose files are in `infra/dev/`:
 - `redis/docker-compose.yml`: Redis with Sentinel for HA
 - `mysql/docker-compose.yml`: MySQL database
 - `docker-compose.yml`: Combined development setup
+
+## Deployment
+
+Deploy all services with Docker Compose:
+
+```bash
+docker compose up -d
+```
+
+This starts:
+- **gateway** on port 8080 (HTTP API)
+- **shortener** gRPC service (port 50051)
+- **redirector** gRPC service (port 50052)
+- **redis** for caching
+- **mysql** for persistence
 
 ## Architecture
 

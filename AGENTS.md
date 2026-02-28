@@ -3,7 +3,10 @@
 ## Project Structure & Module Organization
 This repository is a Rust workspace. Core code lives in `crates/`, with one crate per concern:
 - `wormhole-core`: shared domain types and traits
+- `wormhole-cache`: cache traits and implementations (Moka, Redis, Redis Sentinel)
 - `wormhole-storage`: storage implementations
+- `wormhole-generator`: short code generator abstractions and implementations
+- `wormhole-tinyflake`: Tinyflake-based distributed ID generation primitives
 - `wormhole-shortener`: short URL creation logic
 - `wormhole-redirector`: lookup and caching
 - `wormhole-gateway`: service entrypoint
@@ -11,8 +14,8 @@ This repository is a Rust workspace. Core code lives in `crates/`, with one crat
 - `wormhole-test-infra`: Redis test fixtures
 
 Environment and operations files live at repo root:
-- `devenv.nix`, `rust-toolchain.toml`, `justfile`
-- Docker Compose files under `infra/dev/`
+- `devenv.nix`, `devenv.yaml`, `rust-toolchain.toml`, `justfile`, `docker-compose.yml`
+- Docker Compose stacks under `infra/dev/` (`redis/`, `mysql/`)
 
 ## Build, Test, and Development Commands
 Run `direnv allow` (or enter `devenv shell`) first so toolchain paths and `PROTOC` are available.
@@ -21,10 +24,12 @@ Run `direnv allow` (or enter `devenv shell`) first so toolchain paths and `PROTO
 - `cargo build --workspace`: build all crates
 - `cargo test --locked --all-features --all-targets`: CI-aligned test run
 - `cargo test -p wormhole-shortener`: run a single crate test suite
+- `cargo doc --no-deps --all-features`: build workspace docs
 - `cargo fmt --check`: formatting check
 - `cargo clippy --all-features --all-targets`: lints
 - `just dev-up`: start local Redis/Sentinel stack
-- `just logs`: inspect Redis container logs
+- `just dev-down`: stop local development containers
+- `just logs`: inspect Redis/MySQL container logs
 
 ## Coding Style & Naming Conventions
 - Rust 2021 on stable toolchain; use default `rustfmt` formatting (4-space indentation).
@@ -47,7 +52,7 @@ Run `direnv allow` (or enter `devenv shell`) first so toolchain paths and `PROTO
 - Keep unit tests near implementation (`#[cfg(test)]` modules in `src/`).
 - Use `#[tokio::test]` for async behavior.
 - Put cross-component tests in crate-level `tests/` (for example `crates/wormhole-redirector/tests`).
-- Redis integration/HA tests require Docker; run `just dev-up` before running them.
+- Redis/MySQL integration tests require Docker; run `just dev-up` before running them.
 - No hard coverage gate is defined; new features and bug fixes should include regression tests.
 
 ## Commit & Pull Request Guidelines
