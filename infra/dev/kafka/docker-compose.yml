@@ -1,7 +1,7 @@
 services:
   broker:
     image: apache/kafka:latest
-    container_name: broker
+    container_name: wormhole-kafka-broker
     ports:
       - "9092:9092"
     environment:
