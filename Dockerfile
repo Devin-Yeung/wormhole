@@ -14,10 +14,8 @@ RUN nix \
     build \
     '.#wormhole-redirector' \
     '.#wormhole-shortener' \
-    '.#wormhole-gateway' \
-    'nixpkgs#bash'
-
-# TODO: remove bash in production
+    '.#wormhole-analytics' \
+    '.#wormhole-gateway'
 
 # Copy the Nix store closure into a directory. The Nix store closure is the
 # entire set of Nix store values that we need for our build.
@@ -39,4 +37,4 @@ COPY --from=builder /tmp/nix-store-closure /nix/store
 # Copy our built binaries. The result* files are symlinks to the actual binaries in the Nix store, so we need to copy them as well.
 COPY --from=builder /tmp/build/result* /app
 
-CMD ["bash"]
+CMD []
