@@ -1,18 +1,27 @@
 package event
 
 import (
+	"bytes"
 	"fmt"
 	"net"
 	"time"
 
 	"github.com/Devin-Yeung/wormhole/analytics/internal/domain"
 	pb "github.com/Devin-Yeung/wormhole/analytics/pb/v1"
+	"github.com/google/uuid"
 )
 
 // protoToRedirectEvent converts a wire-level UrlRedirectedEvent to the
 // canonical domain type. This is the only place in the service that
 // touches protobuf types; everything downstream works with domain.RedirectEvent.
 func protoToRedirectEvent(e *pb.UrlRedirectedEvent) (*domain.RedirectEvent, error) {
+	// EventId should be a string-encoded UUIDv7.
+	reader := bytes.NewReader([]byte(e.EventId))
+	eventID, err := uuid.NewV7FromReader(reader)
+	if err != nil {
+		return nil, fmt.Errorf("malformed event_id %q: %w", e.EventId, err)
+	}
+
 	// ClickedAtMs is milliseconds since Unix epoch. We normalise to UTC so
 	// storage backends and query callers don't need to guess the timezone.
 	clickedAt := time.UnixMilli(e.ClickedAtMs).UTC()
@@ -27,7 +36,7 @@ func protoToRedirectEvent(e *pb.UrlRedirectedEvent) (*domain.RedirectEvent, erro
 	}
 
 	return &domain.RedirectEvent{
-		EventID:   e.EventId,
+		EventID:   eventID,
 		ShortCode: e.ShortCode,
 		ClickedAt: clickedAt,
 		VisitorIP: ip,
