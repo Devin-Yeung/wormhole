@@ -55,6 +55,18 @@
     echo "Running tests"
   '';
 
+  scripts = {
+    update-gomod2nix = {
+      description = "update gomod2nix.toml file";
+      exec = ''
+        for file in "$@"; do
+          dir=$(dirname "$file")
+          ${pkgs.gomod2nix}/bin/gomod2nix generate --dir "$dir"
+        done
+      '';
+    };
+  };
+
   # https://devenv.sh/pre-commit-hooks/
   git-hooks = {
     hooks = {
@@ -73,7 +85,12 @@
         enable = true;
       };
       nixfmt.enable = true;
-      taplo.enable = true;
+      taplo = {
+        enable = true;
+        excludes = [
+          "analytics/gomod2nix.toml"
+        ];
+      };
       yamlfmt = {
         enable = true;
         settings = {
@@ -81,6 +98,11 @@
         };
       };
       trim-trailing-whitespace.enable = true;
+      update-gomod2nix = {
+        enable = true;
+        entry = "update-gomod2nix";
+        files = "go.mod$";
+      };
     };
     package = pkgs.prek;
   };
