@@ -1,0 +1,9 @@
+version: "2"
+sql:
+  - engine: "mysql"
+    queries: "sqlc/queries"
+    schema: "sqlc/schema.sql"
+    gen:
+      go:
+        package: "store"
+        out: "internal/repository/store"
