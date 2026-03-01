@@ -67,6 +67,17 @@
         done
       '';
     };
+    update-go-pb = {
+      description = "update generated Go protobuf files";
+      exec = ''
+        ${pkgs.protobuf}/bin/protoc proto/**/*.proto \
+            --go_out=./analytics/pb \
+            --go-grpc_out=./analytics/pb \
+            --go_opt=paths=source_relative \
+            --go-grpc_opt=paths=source_relative \
+            --proto_path=proto # define the proto path for imports
+      '';
+    };
   };
 
   # https://devenv.sh/pre-commit-hooks/
@@ -101,6 +112,12 @@
         enable = true;
         entry = "update-gomod2nix";
         files = "go.mod$";
+      };
+      update-go-pb = {
+        enable = true;
+        entry = "update-go-pb";
+        files = "\\.proto$";
+        pass_filenames = false;
       };
     };
     package = pkgs.prek;
