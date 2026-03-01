@@ -1,15 +1,18 @@
-dev-up:
+up:
   docker compose \
     -f ./infra/dev/docker-compose.yml \
     up \
     -d --force-recreate --remove-orphans
 
+down:
+  docker compose \
+    -f ./infra/dev/docker-compose.yml \
+    down
+
 logs:
-  lnav \
-    docker://wormhole-redis-master \
-    docker://wormhole-redis-slave \
-    docker://wormhole-redis-sentinel \
-    docker://wormhole-mysql
+  docker compose \
+    -f ./infra/dev/docker-compose.yml \
+    logs -f | lnav
 
 compile-go-proto:
     update-go-pb
