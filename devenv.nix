@@ -62,6 +62,8 @@
         for file in "$@"; do
           dir=$(dirname "$file")
           ${pkgs.gomod2nix}/bin/gomod2nix generate --dir "$dir"
+          # format the generated file
+          ${lib.getExe pkgs.taplo} fmt "$dir/gomod2nix.toml"
         done
       '';
     };
@@ -87,9 +89,6 @@
       nixfmt.enable = true;
       taplo = {
         enable = true;
-        excludes = [
-          "analytics/gomod2nix.toml"
-        ];
       };
       yamlfmt = {
         enable = true;
