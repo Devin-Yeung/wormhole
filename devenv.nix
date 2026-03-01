@@ -30,6 +30,7 @@
     protoc-gen-go
     protoc-gen-go-grpc
     gomod2nix
+    kcat
     iredis
     mycli
     lnav
