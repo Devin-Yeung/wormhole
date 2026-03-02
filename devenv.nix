@@ -7,13 +7,14 @@
 }:
 
 {
+
+  imports = [
+    ./nix/go/gomod2nix.nix
+  ];
+
   env.PROTOC = lib.getExe pkgs.protobuf;
 
   dotenv.disableHint = true;
-
-  overlays = [
-    inputs.gomod2nix.overlays.default
-  ];
 
   # https://devenv.sh/packages/
   packages = with pkgs; [
@@ -33,7 +34,6 @@
     protoc-gen-go
     protoc-gen-go-grpc
     # golang
-    gomod2nix
     sqlc
     # useful tools
     kcat
@@ -62,17 +62,6 @@
   '';
 
   scripts = {
-    update-gomod2nix = {
-      description = "update gomod2nix.toml file";
-      exec = ''
-        for file in "$@"; do
-          dir=$(dirname "$file")
-          ${pkgs.gomod2nix}/bin/gomod2nix generate --dir "$dir"
-          # format the generated file
-          ${lib.getExe pkgs.taplo} fmt "$dir/gomod2nix.toml"
-        done
-      '';
-    };
     update-go-pb = {
       description = "update generated Go protobuf files";
       exec = ''
@@ -114,11 +103,6 @@
         };
       };
       trim-trailing-whitespace.enable = true;
-      update-gomod2nix = {
-        enable = true;
-        entry = "update-gomod2nix";
-        files = "go.mod$";
-      };
       update-go-pb = {
         enable = true;
         entry = "update-go-pb";
