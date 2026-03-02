@@ -10,7 +10,7 @@ services:
   slave:
     image: redis:8.6.0
     container_name: wormhole-redis-slave
-    command: redis-server --replicaof wormhole-redis-master 6379
+    command: redis-server --replicaof master 6379
     ports:
       - "16379:6379"
     depends_on:
