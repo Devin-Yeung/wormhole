@@ -17,19 +17,25 @@
 
   # https://devenv.sh/packages/
   packages = with pkgs; [
+    # rust tools
     cargo-deny
     cargo-machete
     cargo-nextest
     cargo-modules
     sqlx-cli
+    # http tools
     ijhttp
     hurl
+    # grpc tools
     grpc-health-probe
     grpcurl
     protobuf
     protoc-gen-go
     protoc-gen-go-grpc
+    # golang
     gomod2nix
+    sqlc
+    # useful tools
     kcat
     iredis
     mycli
@@ -117,6 +123,12 @@
         enable = true;
         entry = "update-go-pb";
         files = "\\.proto$";
+        pass_filenames = false;
+      };
+      update-sqlc-generated = {
+        enable = true;
+        entry = "${lib.getExe pkgs.sqlc} generate -f analytics/sqlc.yaml";
+        files = "analytics\/sqlc\/.*\.sql";
         pass_filenames = false;
       };
     };
