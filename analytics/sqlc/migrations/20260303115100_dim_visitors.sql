@@ -19,15 +19,9 @@ CREATE TABLE IF NOT EXISTS dim_visitors
     ENGINE = InnoDB
     DEFAULT CHARSET = utf8mb4
     COMMENT = 'Visitor dimension: deduplicated profiles built from IP + User-Agent';
-
--- update fact_clicks to add FK constraint to dim_visitors
-ALTER TABLE fact_clicks
-    ADD CONSTRAINT fk_fact_clicks_visitor FOREIGN KEY (visitor_key) REFERENCES dim_visitors (visitor_key);
 -- +goose StatementEnd
 
 -- +goose Down
 -- +goose StatementBegin
-ALTER TABLE fact_clicks
-    DROP FOREIGN KEY fk_fact_clicks_visitor;
 DROP TABLE IF EXISTS dim_visitors;
 -- +goose StatementEnd
