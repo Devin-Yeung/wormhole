@@ -3,7 +3,7 @@
 //   sqlc v1.30.0
 // source: insert.sql
 
-package store
+package mysql
 
 import (
 	"context"
