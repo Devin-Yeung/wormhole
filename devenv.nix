@@ -35,6 +35,7 @@
     protoc-gen-go-grpc
     # golang
     sqlc
+    goose
     # useful tools
     kcat
     iredis
