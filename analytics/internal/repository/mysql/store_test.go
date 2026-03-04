@@ -33,7 +33,7 @@ func newTestMySQLContainer(ctx context.Context, t *testing.T) (container *mysql.
 
 // create a new mysql container with migration applies
 func NewMysql(ctx context.Context, t *testing.T) (db *sql.DB, shutdown func()) {
-	mysqlContainer, shutdown_container := newTestMySQLContainer(ctx, t)
+	mysqlContainer, shutdownContainer := newTestMySQLContainer(ctx, t)
 
 	dsn := mysqlContainer.MustConnectionString(ctx)
 
@@ -51,7 +51,7 @@ func NewMysql(ctx context.Context, t *testing.T) (db *sql.DB, shutdown func()) {
 	shutdown = func() {
 		err = db.Close()
 		require.NoError(t, err)
-		shutdown_container()
+		shutdownContainer()
 	}
 
 	return db, shutdown

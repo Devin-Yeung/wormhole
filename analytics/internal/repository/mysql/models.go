@@ -27,10 +27,6 @@ type DimVisitor struct {
 type FactClick struct {
 	// UUIDv7 stored as 16 bytes
 	EventID []byte
-	// FK -> dim_date (YYYYMMDDHH)
-	DateKey int32
-	// FK -> dim_urls
-	UrlKey int32
 	// FK -> dim_visitors
 	VisitorKey int32
 	// Unix epoch ms; source of truth

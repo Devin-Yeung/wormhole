@@ -11,14 +11,12 @@ import (
 )
 
 const insertClick = `-- name: InsertClick :exec
-INSERT INTO fact_clicks (event_id, date_key, url_key, visitor_key, clicked_at_ms, referer_url)
-VALUES (?, ?, ?, ?, ?, ?)
+INSERT INTO fact_clicks (event_id, visitor_key, clicked_at_ms, referer_url)
+VALUES (?, ?, ?, ?)
 `
 
 type InsertClickParams struct {
 	EventID     []byte
-	DateKey     int32
-	UrlKey      int32
 	VisitorKey  int32
 	ClickedAtMs int64
 	RefererUrl  sql.NullString
@@ -29,8 +27,6 @@ type InsertClickParams struct {
 func (q *Queries) InsertClick(ctx context.Context, arg InsertClickParams) error {
 	_, err := q.db.ExecContext(ctx, insertClick,
 		arg.EventID,
-		arg.DateKey,
-		arg.UrlKey,
 		arg.VisitorKey,
 		arg.ClickedAtMs,
 		arg.RefererUrl,
