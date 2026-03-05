@@ -10,27 +10,66 @@ import (
 	"database/sql"
 )
 
+const getUrlKey = `-- name: GetUrlKey :one
+SELECT url_key FROM dim_urls WHERE short_code = ?
+`
+
+// Gets url_key for a given short_code.
+func (q *Queries) GetUrlKey(ctx context.Context, shortCode string) (int32, error) {
+	row := q.db.QueryRowContext(ctx, getUrlKey, shortCode)
+	var url_key int32
+	err := row.Scan(&url_key)
+	return url_key, err
+}
+
+const getVisitorKey = `-- name: GetVisitorKey :one
+SELECT visitor_key FROM dim_visitors WHERE visitor_fp = ?
+`
+
+// Gets visitor_key for a given visitor_fp.
+func (q *Queries) GetVisitorKey(ctx context.Context, visitorFp []byte) (int32, error) {
+	row := q.db.QueryRowContext(ctx, getVisitorKey, visitorFp)
+	var visitor_key int32
+	err := row.Scan(&visitor_key)
+	return visitor_key, err
+}
+
 const insertClick = `-- name: InsertClick :exec
-INSERT INTO fact_clicks (event_id, visitor_key, clicked_at_ms, referer_url)
-VALUES (?, ?, ?, ?)
+INSERT INTO fact_clicks (event_id, url_key, visitor_key, clicked_at_ms, referer_url)
+VALUES (?, ?, ?, ?, ?)
 `
 
 type InsertClickParams struct {
 	EventID     []byte
+	UrlKey      int32
 	VisitorKey  int32
 	ClickedAtMs int64
 	RefererUrl  sql.NullString
 }
 
 // Inserts a click fact record.
-// caller is responsible for providing valid date_key and url_key values.
+// caller is responsible for providing valid url_key and visitor_key values.
 func (q *Queries) InsertClick(ctx context.Context, arg InsertClickParams) error {
 	_, err := q.db.ExecContext(ctx, insertClick,
 		arg.EventID,
+		arg.UrlKey,
 		arg.VisitorKey,
 		arg.ClickedAtMs,
 		arg.RefererUrl,
 	)
+	return err
+}
+
+const insertUrl = `-- name: InsertUrl :exec
+INSERT INTO dim_urls (short_code)
+VALUES (?)
+ON DUPLICATE KEY UPDATE url_key = LAST_INSERT_ID(url_key)
+`
+
+// Inserts a new URL or returns the existing url_key if short_code already exists.
+// Uses ON DUPLICATE KEY UPDATE to handle the unique constraint on short_code.
+func (q *Queries) InsertUrl(ctx context.Context, shortCode string) error {
+	_, err := q.db.ExecContext(ctx, insertUrl, shortCode)
 	return err
 }
 
@@ -50,7 +89,6 @@ type InsertVisitorParams struct {
 
 // Inserts a new visitor or returns the existing visitor_key if visitor_fp already exists.
 // Uses ON DUPLICATE KEY UPDATE to handle the unique constraint on visitor_fp.
-// Note: caller should query for visitor_key using visitor_fp after this call.
 func (q *Queries) InsertVisitor(ctx context.Context, arg InsertVisitorParams) error {
 	_, err := q.db.ExecContext(ctx, insertVisitor,
 		arg.VisitorFp,

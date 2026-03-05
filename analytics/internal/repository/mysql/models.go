@@ -8,6 +8,13 @@ import (
 	"database/sql"
 )
 
+// URL dimension: maps short_code to url_key for analytics
+type DimUrl struct {
+	UrlKey int32
+	// The short code (unique)
+	ShortCode string
+}
+
 // Visitor dimension: deduplicated profiles built from IP + User-Agent
 type DimVisitor struct {
 	VisitorKey int32
@@ -34,4 +41,5 @@ type FactClick struct {
 	ClickedAt   sql.NullTime
 	// Raw HTTP Referer
 	RefererUrl sql.NullString
+	UrlKey     int32
 }
