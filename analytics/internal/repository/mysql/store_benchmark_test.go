@@ -35,27 +35,32 @@ func BenchmarkRecordRedirect(b *testing.B) {
 	const userAgent = "benchmark-client/1.0"
 	const referer = "https://benchmark.local/load-test"
 
+	// pre-generate the data
+	events := make([]*domain.RedirectEvent, b.N)
+
+	for i := 0; i < b.N; i++ {
+		events[i] = &domain.RedirectEvent{
+			EventID:   uuid.Must(uuid.NewV7()),
+			ShortCode: shortCode,
+			ClickedAt: time.Now().UTC(),
+			VisitorIP: net.IPv4(
+				10,
+				byte((i>>16)&0xff),
+				byte((i>>8)&0xff),
+				byte(i&0xff),
+			).To4(),
+			UserAgent: userAgent,
+			Referer:   referer,
+		}
+	}
+
 	b.ReportAllocs()
 	b.ResetTimer()
 
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next() {
 			seq := atomic.AddUint64(&eventSeq, 1)
-
-			event := &domain.RedirectEvent{
-				EventID:   uuid.Must(uuid.NewV7()),
-				ShortCode: shortCode,
-				ClickedAt: time.Now().UTC(),
-				VisitorIP: net.IPv4(
-					10,
-					byte((seq>>16)&0xff),
-					byte((seq>>8)&0xff),
-					byte(seq&0xff),
-				).To4(),
-				UserAgent: userAgent,
-				Referer:   referer,
-			}
-
+			event := events[seq%uint64(len(events))]
 			err := store.RecordRedirect(ctx, event)
 			require.NoError(b, err)
 		}
