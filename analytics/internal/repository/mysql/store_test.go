@@ -67,4 +67,8 @@ func TestMigration(t *testing.T) {
 	// ping the database to ensure it's up and running
 	err := db.Ping()
 	assert.NoError(t, err)
+
+	// also make sure the goose down migration works
+	err = goose.Down(db, "migrations")
+	assert.NoError(t, err)
 }
