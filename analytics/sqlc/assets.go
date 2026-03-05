@@ -1,8 +1,8 @@
-package assets
+package sqlc
 
 import (
 	"embed"
 )
 
-//go:embed sqlc/migrations
+//go:embed migrations
 var Migrations embed.FS

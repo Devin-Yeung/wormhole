@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"testing"
 
-	assets "github.com/Devin-Yeung/wormhole/analytics"
+	"github.com/Devin-Yeung/wormhole/analytics/sqlc"
 	"github.com/pressly/goose/v3"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -40,12 +40,12 @@ func NewMysql(ctx context.Context, t *testing.T) (db *sql.DB, shutdown func()) {
 	db, err := sql.Open("mysql", dsn)
 	require.NoError(t, err)
 
-	goose.SetBaseFS(assets.Migrations)
+	goose.SetBaseFS(sqlc.Migrations)
 
 	err = goose.SetDialect("mysql")
 	require.NoError(t, err)
 
-	err = goose.Up(db, "sqlc/migrations")
+	err = goose.Up(db, "migrations")
 	require.NoError(t, err)
 
 	shutdown = func() {
