@@ -14,6 +14,7 @@ import (
 
 	"github.com/Devin-Yeung/wormhole/analytics/internal/domain"
 	"github.com/Devin-Yeung/wormhole/analytics/internal/repository"
+	. "github.com/Devin-Yeung/wormhole/analytics/internal/repository/mysql/internal/sqlc"
 )
 
 // type guard

@@ -5,5 +5,5 @@ sql:
     schema: "sqlc/migrations"
     gen:
       go:
-        package: "mysql"
-        out: "internal/repository/mysql"
+        package: "sqlc"
+        out: "internal/repository/mysql/internal/sqlc"
