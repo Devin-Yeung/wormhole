@@ -44,7 +44,8 @@ jobs:
       - name: Install Nix
         uses: DeterminateSystems/determinate-nix-action@main
       - name: Install devenv.sh
-        run: nix profile add 'nixpkgs#devenv'
+        # pin to 1.11.2 untils 2.x is well-tested
+        run: nix profile add github:cachix/devenv/v1.11.2 -L --accept-flake-config
       - name: cargo clippy
         shell: devenv shell bash -- -e {0}
         run: cargo clippy --all-features --all-targets
@@ -58,7 +59,8 @@ jobs:
       - name: Install Nix
         uses: DeterminateSystems/determinate-nix-action@main
       - name: Install devenv.sh
-        run: nix profile add 'nixpkgs#devenv'
+        # pin to 1.11.2 untils 2.x is well-tested
+        run: nix profile add github:cachix/devenv/v1.11.2 -L --accept-flake-config
       - name: cargo doc
         shell: devenv shell bash -- -e {0}
         run: cargo doc --no-deps --all-features
@@ -77,7 +79,8 @@ jobs:
       - name: Install Nix
         uses: DeterminateSystems/determinate-nix-action@main
       - name: Install devenv.sh
-        run: nix profile add 'nixpkgs#devenv'
+        # pin to 1.11.2 untils 2.x is well-tested
+        run: nix profile add github:cachix/devenv/v1.11.2 -L --accept-flake-config
       - name: cargo generate-lockfile
         if: hashFiles('Cargo.lock') == ''
         run: cargo generate-lockfile
@@ -102,7 +105,8 @@ jobs:
       - name: Install Nix
         uses: DeterminateSystems/determinate-nix-action@main
       - name: Install devenv.sh
-        run: nix profile add 'nixpkgs#devenv'
+        # pin to 1.11.2 untils 2.x is well-tested
+        run: nix profile add github:cachix/devenv/v1.11.2 -L --accept-flake-config
       - name: cargo generate-lockfile
         if: hashFiles('Cargo.lock') == ''
         shell: devenv shell bash -- -e {0}
