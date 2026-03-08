@@ -2,3 +2,4 @@ include:
   - path: ./redis/docker-compose.yml
   - path: ./db/docker-compose.yml
   - path: ./kafka/docker-compose.yml
+  - path: ./observability/docker-compose.yml

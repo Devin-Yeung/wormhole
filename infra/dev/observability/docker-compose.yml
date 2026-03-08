@@ -1,0 +1,10 @@
+services:
+  grafana:
+    image: grafana/otel-lgtm:latest
+    container_name: wormhole-grafana
+    ports:
+      - "4317:4317"
+      - "4318:4318"
+      - "3000:3000"
+    environment:
+      ENABLE_LOGS_ALL: true
