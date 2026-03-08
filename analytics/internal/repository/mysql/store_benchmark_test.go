@@ -8,12 +8,23 @@ import (
 	"time"
 
 	"github.com/Devin-Yeung/wormhole/analytics/internal/domain"
+	"github.com/Devin-Yeung/wormhole/analytics/internal/telemetry"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/require"
 )
 
 func BenchmarkRecordRedirect(b *testing.B) {
 	ctx := context.Background()
+
+	otelShutdown, err := telemetry.Setup(ctx)
+	defer func() {
+		// Give in-flight spans and metrics up to 5 seconds to flush.
+		flushCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		_ = otelShutdown(flushCtx)
+	}()
+
+	require.NoError(b, err)
 
 	// We spin up MySQL once per benchmark run so the reported time focuses on
 	// steady-state write throughput, not container startup and migrations.
