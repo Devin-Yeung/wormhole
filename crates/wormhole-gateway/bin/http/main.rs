@@ -4,28 +4,16 @@ mod cli;
 use wormhole_gateway::adapter::grpc::GrpcUrlAdapter;
 use wormhole_gateway::app::App;
 use wormhole_gateway::state::AppState;
+use wormhole_gateway::telemetry;
 
 use crate::cli::CLI;
 use clap::Parser;
 use tonic::transport::Endpoint;
-use tracing::dispatcher::set_global_default;
 use tracing::info;
-use tracing_log::LogTracer;
-use tracing_subscriber::layer::SubscriberExt;
-use tracing_subscriber::Registry;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    LogTracer::init().expect("Failed to set logger");
-    let env_filter =
-        tracing_subscriber::EnvFilter::try_from_default_env().unwrap_or_else(|_| "info".into());
-
-    let fmt_layer = tracing_subscriber::fmt::layer().json();
-
-    // Initialize tracing with JSON formatting and env filter
-    let subscriber = Registry::default().with(env_filter).with(fmt_layer);
-
-    set_global_default(subscriber.into())?;
+    let mut telemetry = telemetry::init_tracing()?;
 
     // Parse CLI arguments
     let config = CLI::parse();
@@ -74,6 +62,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     info!(listen_addr = %listener.local_addr()?, "gateway HTTP server listening");
 
     axum::serve(listener, app).await?;
+
+    telemetry.shutdown();
 
     Ok(())
 }
