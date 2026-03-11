@@ -17,6 +17,7 @@ impl App {
                     get(get_url_handler).delete(delete_url_handler),
                 ),
             )
+            .layer(tower_http::trace::TraceLayer::new_for_http())
             .with_state(state)
     }
 }
