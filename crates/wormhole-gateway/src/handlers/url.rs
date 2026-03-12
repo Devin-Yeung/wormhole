@@ -7,7 +7,9 @@ use axum::extract::{Path, State};
 use axum::http::StatusCode;
 use axum::Json;
 use std::result::Result as StdResult;
+use tracing::instrument;
 
+#[instrument(skip(state))]
 pub async fn create_url_handler(
     State(state): State<AppState>,
     request: StdResult<Json<CreateUrlRequest>, JsonRejection>,
@@ -35,6 +37,7 @@ pub async fn create_url_handler(
     ))
 }
 
+#[instrument(skip(state))]
 pub async fn get_url_handler(
     Path(short_code): Path<String>,
     State(state): State<AppState>,
@@ -47,6 +50,7 @@ pub async fn get_url_handler(
     }))
 }
 
+#[instrument(skip(state))]
 pub async fn delete_url_handler(
     Path(short_code): Path<String>,
     State(state): State<AppState>,
