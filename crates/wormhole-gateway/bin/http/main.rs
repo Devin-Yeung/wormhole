@@ -4,7 +4,7 @@ mod cli;
 use wormhole_gateway::adapter::grpc::GrpcUrlAdapter;
 use wormhole_gateway::app::App;
 use wormhole_gateway::state::AppState;
-use wormhole_gateway::telemetry;
+use wormhole_telemetry::init_tracing;
 
 use crate::cli::CLI;
 use clap::Parser;
@@ -13,7 +13,7 @@ use tracing::info;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let mut telemetry = telemetry::init_tracing()?;
+    let _telemetry = init_tracing("wormhole-gateway")?;
 
     // Parse CLI arguments
     let config = CLI::parse();
@@ -62,8 +62,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     info!(listen_addr = %listener.local_addr()?, "gateway HTTP server listening");
 
     axum::serve(listener, app).await?;
-
-    telemetry.shutdown();
 
     Ok(())
 }

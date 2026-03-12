@@ -4346,21 +4346,14 @@ dependencies = [
  "axum",
  "clap",
  "jiff",
- "opentelemetry",
- "opentelemetry-otlp",
- "opentelemetry_sdk",
  "prost",
  "prost-types",
  "serde",
  "serde_json",
  "tokio",
  "tonic",
- "tower",
  "tower-http",
  "tracing",
- "tracing-log",
- "tracing-opentelemetry",
- "tracing-subscriber",
  "typed-builder",
  "wormhole-core",
  "wormhole-generator",
@@ -4368,6 +4361,7 @@ dependencies = [
  "wormhole-redirector",
  "wormhole-shortener",
  "wormhole-storage",
+ "wormhole-telemetry",
 ]
 
 [[package]]
@@ -4452,6 +4446,21 @@ dependencies = [
  "wormhole-cache",
  "wormhole-core",
  "wormhole-test-infra",
+]
+
+[[package]]
+name = "wormhole-telemetry"
+version = "0.1.0"
+dependencies = [
+ "axum",
+ "opentelemetry",
+ "opentelemetry-otlp",
+ "opentelemetry_sdk",
+ "tonic",
+ "tracing",
+ "tracing-log",
+ "tracing-opentelemetry",
+ "tracing-subscriber",
 ]
 
 [[package]]

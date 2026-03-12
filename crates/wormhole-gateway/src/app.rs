@@ -1,6 +1,5 @@
 use crate::handlers::{create_url_handler, delete_url_handler, get_url_handler, health_handler};
 use crate::state::AppState;
-use crate::telemetry::HttpHeaderExtractor;
 use axum::extract::MatchedPath;
 use axum::http::Request;
 use axum::routing::{get, post};
@@ -8,7 +7,6 @@ use axum::Router;
 use tower_http::trace::{DefaultOnRequest, DefaultOnResponse};
 use tower_http::LatencyUnit;
 use tracing::Level;
-use tracing_opentelemetry::OpenTelemetrySpanExt;
 
 pub struct App {}
 
@@ -33,15 +31,7 @@ impl App {
                     headers = ?request.headers(),
                 );
 
-                if let Err(error) = span.set_parent(HttpHeaderExtractor::extract_remote_context(
-                    request.headers(),
-                )) {
-                    tracing::warn!(
-                        error = %error,
-                        "failed to attach remote OpenTelemetry parent to request span"
-                    );
-                }
-
+                // TODO: extract remote parent context from headers and attach to the current span
                 span
             })
             // Log incoming requests at INFO level
