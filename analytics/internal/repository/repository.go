@@ -8,7 +8,7 @@ import (
 )
 
 // AnalyticsRepository is the storage contract for the analytics service.
-// Implementations may be backed by ClickHouse, TimescaleDB, MySQL, etc.
+// Implementations may be backed by TiDB, ClickHouse, TimescaleDB, etc.
 type AnalyticsRepository interface {
 	// --- Write path ---
 

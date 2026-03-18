@@ -1,4 +1,4 @@
-package mysql
+package tidb
 
 import (
 	"context"
@@ -26,9 +26,9 @@ func BenchmarkRecordRedirect(b *testing.B) {
 
 	require.NoError(b, err)
 
-	// We spin up MySQL once per benchmark run so the reported time focuses on
+	// We spin up TiDB once per benchmark run so the reported time focuses on
 	// steady-state write throughput, not container startup and migrations.
-	db, shutdown := NewMysql(ctx, b)
+	db, shutdown := NewTiDB(ctx, b)
 	b.Cleanup(shutdown)
 
 	// Keep the pool bounded so we can reason about throughput changes when

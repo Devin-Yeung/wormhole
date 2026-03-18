@@ -1,4 +1,4 @@
-package mysql
+package tidb
 
 import (
 	"context"
@@ -9,35 +9,30 @@ import (
 	"github.com/pressly/goose/v3"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/testcontainers/testcontainers-go/modules/mysql"
+	"github.com/testcontainers/testcontainers-go/modules/tidb"
 
 	_ "github.com/go-sql-driver/mysql"
 )
 
-func newTestMySQLContainer(ctx context.Context, tb testing.TB) (container *mysql.MySQLContainer, shutdown func()) {
-	container, err := mysql.Run(ctx,
-		"mysql:8.4",
-		mysql.WithDatabase("wormhole"),
-		mysql.WithUsername("root"),
-		mysql.WithPassword("root"),
+func newTestTiDBContainer(ctx context.Context, tb testing.TB) (ctr *tidb.Container, shutdown func()) {
+	ctr, err := tidb.Run(ctx,
+		"pingcap/tidb:v8.4.0",
 	)
 	require.NoError(tb, err)
 
 	shutdown = func() {
-		err := container.Terminate(ctx)
+		err := ctr.Terminate(ctx)
 		require.NoError(tb, err)
 	}
 
-	return container, shutdown
+	return ctr, shutdown
 }
 
-// create a new mysql container with migration applies
-func NewMysql(ctx context.Context, tb testing.TB) (db *sql.DB, shutdown func()) {
-	mysqlContainer, shutdownContainer := newTestMySQLContainer(ctx, tb)
+// NewTiDB creates a disposable TiDB instance and applies the analytics schema.
+func NewTiDB(ctx context.Context, tb testing.TB) (db *sql.DB, shutdown func()) {
+	tidbContainer, shutdownContainer := newTestTiDBContainer(ctx, tb)
 
-	dsn := mysqlContainer.MustConnectionString(ctx)
-
-	db, err := sql.Open("mysql", dsn)
+	db, err := sql.Open("mysql", tidbContainer.MustConnectionString(ctx))
 	require.NoError(tb, err)
 
 	goose.SetBaseFS(sqlc.Migrations)
@@ -60,8 +55,8 @@ func NewMysql(ctx context.Context, tb testing.TB) (db *sql.DB, shutdown func()) 
 func TestMigration(t *testing.T) {
 	ctx := context.Background()
 
-	// spin up a mysql container and apply migration
-	db, shutdown := NewMysql(ctx, t)
+	// Spin up TiDB and verify goose can apply and roll back the analytics schema.
+	db, shutdown := NewTiDB(ctx, t)
 	defer shutdown()
 
 	// ping the database to ensure it's up and running

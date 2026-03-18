@@ -1,4 +1,4 @@
-package mysql
+package tidb
 
 import (
 	"context"
@@ -10,12 +10,12 @@ import (
 	"go.opentelemetry.io/otel/trace"
 )
 
-const tracerName = "wormhole/analytics/mysql"
-const meterName = "wormhole/analytics/mysql"
+const tracerName = "wormhole/analytics/tidb"
+const meterName = "wormhole/analytics/tidb"
 
-// recordRedirectTxDuration measures wall-clock time from BeginTx to Commit (or rollback on
-// error).  Buckets are sized around typical MySQL LAN round-trip latencies so
-// that p50/p95/p99 are each in a separate bucket.
+// recordRedirectTxDuration measures wall-clock time from BeginTx to Commit (or
+// rollback on error). Buckets are sized around the low-latency OLTP profile we
+// expect from a colocated TiDB deployment.
 var recordRedirectTxDuration metric.Float64Histogram
 
 func init() {
