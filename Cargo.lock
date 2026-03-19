@@ -4180,6 +4180,7 @@ dependencies = [
  "clap",
  "jiff",
  "prost-types",
+ "sqlx",
  "thiserror",
  "tokio",
  "tonic",
@@ -4190,6 +4191,7 @@ dependencies = [
  "wormhole-generator",
  "wormhole-proto-schema",
  "wormhole-storage",
+ "wormhole-test-infra",
  "wormhole-tinyflake",
 ]
 
