@@ -37,6 +37,7 @@
     sqlc
     goose
     # useful tools
+    zensical # for docs
     kcat
     iredis
     mycli
