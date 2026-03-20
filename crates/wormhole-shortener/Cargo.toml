@@ -8,6 +8,11 @@ license.workspace = true
 name = "shortener"
 path = "bin/grpc/main.rs"
 
+[[bench]]
+name = "shorten_mysql_qps"
+path = "benches/shorten_mysql_qps.rs"
+harness = false
+
 [dependencies]
 # Workspace members
 wormhole-core = { workspace = true }
@@ -31,3 +36,8 @@ tracing-subscriber = { workspace = true, features = ["json", "env-filter"] }
 
 # Error handling
 thiserror = { workspace = true }
+
+[dev-dependencies]
+criterion = "0.5.1"
+sqlx = { version = "0.8.6", features = ["mysql", "runtime-tokio-rustls"] }
+wormhole-test-infra = { workspace = true }

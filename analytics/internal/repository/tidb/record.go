@@ -1,4 +1,4 @@
-package mysql
+package tidb
 
 import (
 	"context"
@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/Devin-Yeung/wormhole/analytics/internal/domain"
-	. "github.com/Devin-Yeung/wormhole/analytics/internal/repository/mysql/internal/sqlc"
+	. "github.com/Devin-Yeung/wormhole/analytics/internal/repository/tidb/internal/sqlc"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"

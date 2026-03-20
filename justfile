@@ -14,5 +14,12 @@ logs:
     -f ./infra/dev/docker-compose.yml \
     logs -f | lnav
 
+gateway:
+  watchexec \
+    -e rs \
+    -- cargo run --quiet \
+    --bin gateway \
+    | lnav
+
 compile-go-proto:
     update-go-pb
