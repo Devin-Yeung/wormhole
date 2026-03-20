@@ -38,7 +38,7 @@ These values are planning targets for system sizing and performance design.
 
 For the generated short-code path, the **1,024 QPS** write target is a deliberate generator-side ceiling derived from
 the Tinyflake bit budget and the requirement that generated Base58 short codes stay within 7 characters. It should not
-be read as an estimate of the database's maximum insert throughput. See [Tinyflake Throughput](./tinyflake-throughput.md)
+be read as an estimate of the database's maximum insert throughput. See [Tinyflake Throughput](tinyflake-throughput.md)
 for the full derivation.
 
 ## Write Workload
