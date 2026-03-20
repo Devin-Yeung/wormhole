@@ -4,23 +4,16 @@ mod cli;
 use wormhole_gateway::adapter::grpc::GrpcUrlAdapter;
 use wormhole_gateway::app::App;
 use wormhole_gateway::state::AppState;
+use wormhole_telemetry::init_tracing;
 
 use crate::cli::CLI;
 use clap::Parser;
 use tonic::transport::Endpoint;
 use tracing::info;
-use tracing_subscriber::layer::SubscriberExt;
-use tracing_subscriber::util::SubscriberInitExt;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    // Initialize tracing with JSON formatting and env filter
-    tracing_subscriber::registry()
-        .with(
-            tracing_subscriber::EnvFilter::try_from_default_env().unwrap_or_else(|_| "info".into()),
-        )
-        .with(tracing_subscriber::fmt::layer().json())
-        .init();
+    let _telemetry = init_tracing("wormhole-gateway")?;
 
     // Parse CLI arguments
     let config = CLI::parse();

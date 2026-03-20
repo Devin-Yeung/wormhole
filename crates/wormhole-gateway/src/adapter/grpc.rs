@@ -141,12 +141,12 @@ impl UrlRead for GrpcUrlAdapter {
             .into_inner();
 
         // Extract the URL record from response
-        let url_record = response.url_record.ok_or_else(|| BackendError::NotFound)?;
+        let url_record = response.url_record.ok_or(BackendError::NotFound)?;
 
         // Convert expiration timestamp if present
         let expire_at = url_record
             .expire_at
-            .map(|ts| jiff::Timestamp::new(ts.seconds, ts.nanos as i32).expect("valid timestamp"));
+            .map(|ts| jiff::Timestamp::new(ts.seconds, ts.nanos).expect("valid timestamp"));
 
         Ok(GetUrlResult {
             original_url: url_record.original_url,

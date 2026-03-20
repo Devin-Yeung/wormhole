@@ -1,7 +1,7 @@
 use jiff::Timestamp;
 use serde::{Deserialize, Serialize};
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Debug)]
 pub struct CreateUrlRequest {
     pub original_url: String,
     pub custom_alias: Option<String>,

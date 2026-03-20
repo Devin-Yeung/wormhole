@@ -27,9 +27,6 @@ sqlx = { version = "0.8.6", features = [
   "migrate",
 ] }
 
-# Serialization
-serde = { workspace = true, features = ["derive"] }
-
 # Error handling
 thiserror = { workspace = true }
 tonic = { workspace = true }
