@@ -4,15 +4,14 @@ on:
     branches:
       - master
       - main
+  pull_request:
 permissions:
   contents: read
-  pages: write
-  id-token: write
 jobs:
-  deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+  # Build the documentation for both PRs and branch pushes so docs breakages
+  # are caught before merge. Deployment stays in a separate job because PRs
+  # should validate the site without publishing it.
+  build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/configure-pages@v5
@@ -22,8 +21,20 @@ jobs:
           python-version: 3.x
       - run: pip install zensical
       - run: zensical build --clean
-      - uses: actions/upload-pages-artifact@v4
+      - if: github.event_name == 'push' && (github.ref_name == 'main' || github.ref_name == 'master')
+        uses: actions/upload-pages-artifact@v4
         with:
           path: site
+  deploy:
+    if: github.event_name == 'push' && (github.ref_name == 'main' || github.ref_name == 'master')
+    needs: build
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
       - uses: actions/deploy-pages@v4
         id: deployment
