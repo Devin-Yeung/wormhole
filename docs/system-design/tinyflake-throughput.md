@@ -20,10 +20,7 @@ outside this Tinyflake sizing discussion.
 
 Generated short codes are produced by Base58-encoding the raw bytes of `TinyId`.
 
-That requirement gives the generator a hard size budget:
-
-- `58^7 = 2,207,984,167,552` possible 7-character Base58 strings
-- this is slightly larger than `2^41`
+That requirement gives the generator a hard size budget: $58^7 = 2{,}207{,}984{,}167{,}552 > 2^{41}$.
 
 If we only looked at abstract integer capacity, it would be tempting to say that a 41-bit ID should fit under a
 7-character Base58 limit.
@@ -63,16 +60,15 @@ The current Tinyflake layout is:
 | Node ID   |    2 | Distinguishes up to 4 generators                               |
 | Total     |   40 | Fits in 5 bytes, which keeps Base58 output within 7 characters |
 
-This layout yields a global ID space of `2^40 = 1,099,511,627,776` unique values across the full life of the system.
+This layout yields a global ID space of $2^{40} = 1{,}099{,}511{,}627{,}776$ unique values across the full life of
+the system.
 
 ## Lifetime Budget
 
 The timestamp in `Tinyflake` uses whole-second precision.
 
-With `30` timestamp bits, the system can issue IDs for:
-
-- `2^30 = 1,073,741,824` seconds
-- about `34.03` years
+With `30` timestamp bits, the system can issue IDs for $2^{30} = 1{,}073{,}741{,}824$ seconds, or
+$\frac{2^{30}}{365.25 \times 24 \times 60 \times 60} \approx 34.03$ years.
 
 This is the lifetime target chosen by the current design. It is long enough for a production system without forcing
 generated short codes to exceed 7 characters.
@@ -82,9 +78,7 @@ ID space.
 
 ## Throughput Budget
 
-After reserving `30` bits for time, only `10` bits remain for concurrent issuance:
-
-- `40 - 30 = 10`
+After reserving `30` bits for time, only $40 - 30 = 10$ bits remain for concurrent issuance.
 
 Those `10` bits are split into:
 
@@ -93,8 +87,8 @@ Those `10` bits are split into:
 
 That produces the following hard limits:
 
-- per node: `2^8 = 256` IDs per second
-- cluster-wide across 4 nodes: `2^(8 + 2) = 2^10 = 1,024` IDs per second
+- per node: $2^8 = 256$ IDs per second
+- cluster-wide across 4 nodes: $2^{8 + 2} = 2^{10} = 1{,}024$ IDs per second
 
 This is where the **1,024 QPS** ceiling comes from.
 
