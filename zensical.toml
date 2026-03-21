@@ -65,7 +65,11 @@ Copyright &copy; 2026 The authors
 # The path provided should be relative to the "docs_dir".
 #
 # Read more: https://zensical.org/docs/customization/#additional-javascript
-#extra_javascript = ["javascripts/extra.js"]
+extra_javascript = [
+  "javascripts/extra.js",
+  "javascripts/mathjax.js",
+  "https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js",
+]
 
 # ----------------------------------------------------------------------------
 # Section for configuring theme options
@@ -306,3 +310,6 @@ toggle.name = "Switch to light mode"
 
 [project.markdown_extensions.zensical.extensions.preview]
 configurations = [{ targets.include = ["*"] }]
+
+[project.markdown_extensions.pymdownx.arithmatex]
+generic = true
