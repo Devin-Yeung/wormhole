@@ -10,6 +10,6 @@ decisions behind those services.
 
 Current system design notes:
 
-- [Workload Model](system-design/workload.md)
-- [Tinyflake Throughput Limit](system-design/tinyflake-throughput.md)
-- [Why a Traditional Bloom Filter Is Not Viable](system-design/bloom-filter-infeasibility.md)
+- [Workload Model](system-design/workload.md#overview)
+- [Tinyflake Throughput Limit](system-design/tinyflake-throughput.md#overview)
+- [Why a Traditional Bloom Filter Is Not Viable](system-design/bloom-filter-infeasibility.md#overview)
