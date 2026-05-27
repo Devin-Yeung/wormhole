@@ -81,17 +81,9 @@
   git-hooks = {
     hooks = {
       clippy = {
-        packageOverrides = {
-          cargo = config.languages.rust.toolchainPackage;
-          clippy = config.languages.rust.toolchainPackage;
-        };
         enable = true;
       };
       rustfmt = {
-        packageOverrides = {
-          cargo = config.languages.rust.toolchainPackage;
-          rustfmt = config.languages.rust.toolchainPackage;
-        };
         enable = true;
       };
       nixfmt.enable = true;
