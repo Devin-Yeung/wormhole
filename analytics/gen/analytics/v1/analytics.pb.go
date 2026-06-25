@@ -4,7 +4,7 @@
 // 	protoc        (unknown)
 // source: analytics/v1/analytics.proto
 
-package pb
+package analyticsv1
 
 import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
@@ -125,7 +125,7 @@ const file_analytics_v1_analytics_proto_rawDesc = "" +
 	"visitor_ip\x18\x04 \x01(\tR\tvisitorIp\x12\x1d\n" +
 	"\n" +
 	"user_agent\x18\x05 \x01(\tR\tuserAgent\x12\x18\n" +
-	"\areferer\x18\x06 \x01(\tR\arefererB4Z2github.com/Devin-Yeung/wormhole/analytics/pb/v1;pbb\x06proto3"
+	"\areferer\x18\x06 \x01(\tR\arefererb\x06proto3"
 
 var (
 	file_analytics_v1_analytics_proto_rawDescOnce sync.Once

@@ -4,7 +4,7 @@ import (
 	"net"
 	"time"
 
-	"github.com/Devin-Yeung/wormhole/analytics/pb/v1"
+	analyticsv1 "github.com/Devin-Yeung/wormhole/analytics/gen/analytics/v1"
 	"github.com/google/uuid"
 )
 
@@ -20,8 +20,8 @@ type RedirectEvent struct {
 	Referer   string // empty string when absent
 }
 
-func (e *RedirectEvent) toProto() *pb.UrlRedirectedEvent {
-	return &pb.UrlRedirectedEvent{
+func (e *RedirectEvent) toProto() *analyticsv1.UrlRedirectedEvent {
+	return &analyticsv1.UrlRedirectedEvent{
 		EventId:     e.EventID.String(),
 		ShortCode:   e.ShortCode,
 		ClickedAtMs: e.ClickedAt.UnixMilli(),

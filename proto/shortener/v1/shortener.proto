@@ -2,7 +2,6 @@ syntax = "proto3";
 
 package shortener.v1;
 
-option go_package = "github.com/Devin-Yeung/wormhole/analytics/pb/v1;pb";
 
 import "google/protobuf/timestamp.proto";
 import "shortcode/v1/shortcode.proto";

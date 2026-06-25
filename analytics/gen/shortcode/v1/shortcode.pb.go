@@ -4,7 +4,7 @@
 // 	protoc        (unknown)
 // source: shortcode/v1/shortcode.proto
 
-package pb
+package shortcodev1
 
 import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
@@ -193,7 +193,7 @@ const file_shortcode_v1_shortcode_proto_rawDesc = "" +
 	"\texpire_at\x18\x02 \x01(\v2\x1a.google.protobuf.TimestampR\bexpireAt*J\n" +
 	"\rShortCodeKind\x12\x1d\n" +
 	"\x19SHORT_CODE_KIND_GENERATED\x10\x00\x12\x1a\n" +
-	"\x16SHORT_CODE_KIND_CUSTOM\x10\x01B4Z2github.com/Devin-Yeung/wormhole/analytics/pb/v1;pbb\x06proto3"
+	"\x16SHORT_CODE_KIND_CUSTOM\x10\x01b\x06proto3"
 
 var (
 	file_shortcode_v1_shortcode_proto_rawDescOnce sync.Once

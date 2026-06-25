@@ -7,14 +7,14 @@ import (
 	"time"
 
 	"github.com/Devin-Yeung/wormhole/analytics/internal/domain"
-	pb "github.com/Devin-Yeung/wormhole/analytics/pb/v1"
+	analyticsv1 "github.com/Devin-Yeung/wormhole/analytics/gen/analytics/v1"
 	"github.com/google/uuid"
 )
 
 // protoToRedirectEvent converts a wire-level UrlRedirectedEvent to the
 // canonical domain type. This is the only place in the service that
 // touches protobuf types; everything downstream works with domain.RedirectEvent.
-func protoToRedirectEvent(e *pb.UrlRedirectedEvent) (*domain.RedirectEvent, error) {
+func protoToRedirectEvent(e *analyticsv1.UrlRedirectedEvent) (*domain.RedirectEvent, error) {
 	// EventId should be a string-encoded UUIDv7.
 	reader := bytes.NewReader([]byte(e.EventId))
 	eventID, err := uuid.NewV7FromReader(reader)

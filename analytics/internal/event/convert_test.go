@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Devin-Yeung/wormhole/analytics/pb/v1"
+	analyticsv1 "github.com/Devin-Yeung/wormhole/analytics/gen/analytics/v1"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/require"
 )
@@ -22,7 +22,7 @@ func TestProtoToRedirectEvent(t *testing.T) {
 
 	tests := []struct {
 		name        string
-		input       *pb.UrlRedirectedEvent
+		input       *analyticsv1.UrlRedirectedEvent
 		wantErr     bool
 		wantIP      net.IP
 		wantTime    time.Time
@@ -30,7 +30,7 @@ func TestProtoToRedirectEvent(t *testing.T) {
 	}{
 		{
 			name: "valid IPv4 with referer",
-			input: &pb.UrlRedirectedEvent{
+			input: &analyticsv1.UrlRedirectedEvent{
 				EventId:     uuid1,
 				ShortCode:   "abc123",
 				ClickedAtMs: ts,
@@ -44,7 +44,7 @@ func TestProtoToRedirectEvent(t *testing.T) {
 		},
 		{
 			name: "valid IPv6 without referer",
-			input: &pb.UrlRedirectedEvent{
+			input: &analyticsv1.UrlRedirectedEvent{
 				EventId:     uuid2,
 				ShortCode:   "xyz",
 				ClickedAtMs: ts,
@@ -58,7 +58,7 @@ func TestProtoToRedirectEvent(t *testing.T) {
 		},
 		{
 			name: "empty visitor_ip is rejected",
-			input: &pb.UrlRedirectedEvent{
+			input: &analyticsv1.UrlRedirectedEvent{
 				EventId:     uuid3,
 				VisitorIp:   "",
 				ClickedAtMs: ts,
@@ -67,7 +67,7 @@ func TestProtoToRedirectEvent(t *testing.T) {
 		},
 		{
 			name: "malformed visitor_ip is rejected",
-			input: &pb.UrlRedirectedEvent{
+			input: &analyticsv1.UrlRedirectedEvent{
 				EventId:     uuid4,
 				VisitorIp:   "not-an-ip",
 				ClickedAtMs: ts,

@@ -4,9 +4,10 @@
 // 	protoc        (unknown)
 // source: redirector/v1/redirector.proto
 
-package pb
+package redirectorv1
 
 import (
+	v1 "github.com/Devin-Yeung/wormhole/analytics/gen/shortcode/v1"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"
@@ -25,7 +26,7 @@ type ResolveRequest struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// The short code to resolve.
 	// Expected format: 3-32 chars, [a-zA-Z0-9_-].
-	ShortCode     *ShortCode `protobuf:"bytes,1,opt,name=short_code,json=shortCode,proto3" json:"short_code,omitempty"`
+	ShortCode     *v1.ShortCode `protobuf:"bytes,1,opt,name=short_code,json=shortCode,proto3" json:"short_code,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -60,7 +61,7 @@ func (*ResolveRequest) Descriptor() ([]byte, []int) {
 	return file_redirector_v1_redirector_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *ResolveRequest) GetShortCode() *ShortCode {
+func (x *ResolveRequest) GetShortCode() *v1.ShortCode {
 	if x != nil {
 		return x.ShortCode
 	}
@@ -70,7 +71,7 @@ func (x *ResolveRequest) GetShortCode() *ShortCode {
 type ResolveResponse struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// The URL record containing the original URL and expiration info.
-	UrlRecord     *UrlRecord `protobuf:"bytes,1,opt,name=url_record,json=urlRecord,proto3" json:"url_record,omitempty"`
+	UrlRecord     *v1.UrlRecord `protobuf:"bytes,1,opt,name=url_record,json=urlRecord,proto3" json:"url_record,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -105,7 +106,7 @@ func (*ResolveResponse) Descriptor() ([]byte, []int) {
 	return file_redirector_v1_redirector_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *ResolveResponse) GetUrlRecord() *UrlRecord {
+func (x *ResolveResponse) GetUrlRecord() *v1.UrlRecord {
 	if x != nil {
 		return x.UrlRecord
 	}
@@ -124,7 +125,7 @@ const file_redirector_v1_redirector_proto_rawDesc = "" +
 	"\n" +
 	"url_record\x18\x01 \x01(\v2\x17.shortcode.v1.UrlRecordR\turlRecord2]\n" +
 	"\x11RedirectorService\x12H\n" +
-	"\aResolve\x12\x1d.redirector.v1.ResolveRequest\x1a\x1e.redirector.v1.ResolveResponseB4Z2github.com/Devin-Yeung/wormhole/analytics/pb/v1;pbb\x06proto3"
+	"\aResolve\x12\x1d.redirector.v1.ResolveRequest\x1a\x1e.redirector.v1.ResolveResponseb\x06proto3"
 
 var (
 	file_redirector_v1_redirector_proto_rawDescOnce sync.Once
@@ -142,8 +143,8 @@ var file_redirector_v1_redirector_proto_msgTypes = make([]protoimpl.MessageInfo,
 var file_redirector_v1_redirector_proto_goTypes = []any{
 	(*ResolveRequest)(nil),  // 0: redirector.v1.ResolveRequest
 	(*ResolveResponse)(nil), // 1: redirector.v1.ResolveResponse
-	(*ShortCode)(nil),       // 2: shortcode.v1.ShortCode
-	(*UrlRecord)(nil),       // 3: shortcode.v1.UrlRecord
+	(*v1.ShortCode)(nil),    // 2: shortcode.v1.ShortCode
+	(*v1.UrlRecord)(nil),    // 3: shortcode.v1.UrlRecord
 }
 var file_redirector_v1_redirector_proto_depIdxs = []int32{
 	2, // 0: redirector.v1.ResolveRequest.short_code:type_name -> shortcode.v1.ShortCode
@@ -162,7 +163,6 @@ func file_redirector_v1_redirector_proto_init() {
 	if File_redirector_v1_redirector_proto != nil {
 		return
 	}
-	file_shortcode_v1_shortcode_proto_init()
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{

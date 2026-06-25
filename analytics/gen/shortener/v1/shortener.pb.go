@@ -4,9 +4,10 @@
 // 	protoc        (unknown)
 // source: shortener/v1/shortener.proto
 
-package pb
+package shortenerv1
 
 import (
+	v1 "github.com/Devin-Yeung/wormhole/analytics/gen/shortcode/v1"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
@@ -88,7 +89,7 @@ func (x *CreateRequest) GetCustomAlias() string {
 type CreateResponse struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// The generated short code for the original URL.
-	ShortCode     *ShortCode `protobuf:"bytes,1,opt,name=short_code,json=shortCode,proto3" json:"short_code,omitempty"`
+	ShortCode     *v1.ShortCode `protobuf:"bytes,1,opt,name=short_code,json=shortCode,proto3" json:"short_code,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -123,7 +124,7 @@ func (*CreateResponse) Descriptor() ([]byte, []int) {
 	return file_shortener_v1_shortener_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *CreateResponse) GetShortCode() *ShortCode {
+func (x *CreateResponse) GetShortCode() *v1.ShortCode {
 	if x != nil {
 		return x.ShortCode
 	}
@@ -144,7 +145,7 @@ const file_shortener_v1_shortener_proto_rawDesc = "" +
 	"\n" +
 	"short_code\x18\x01 \x01(\v2\x17.shortcode.v1.ShortCodeR\tshortCode2W\n" +
 	"\x10ShortenerService\x12C\n" +
-	"\x06Create\x12\x1b.shortener.v1.CreateRequest\x1a\x1c.shortener.v1.CreateResponseB4Z2github.com/Devin-Yeung/wormhole/analytics/pb/v1;pbb\x06proto3"
+	"\x06Create\x12\x1b.shortener.v1.CreateRequest\x1a\x1c.shortener.v1.CreateResponseb\x06proto3"
 
 var (
 	file_shortener_v1_shortener_proto_rawDescOnce sync.Once
@@ -163,7 +164,7 @@ var file_shortener_v1_shortener_proto_goTypes = []any{
 	(*CreateRequest)(nil),         // 0: shortener.v1.CreateRequest
 	(*CreateResponse)(nil),        // 1: shortener.v1.CreateResponse
 	(*timestamppb.Timestamp)(nil), // 2: google.protobuf.Timestamp
-	(*ShortCode)(nil),             // 3: shortcode.v1.ShortCode
+	(*v1.ShortCode)(nil),          // 3: shortcode.v1.ShortCode
 }
 var file_shortener_v1_shortener_proto_depIdxs = []int32{
 	2, // 0: shortener.v1.CreateRequest.expire_at:type_name -> google.protobuf.Timestamp
@@ -182,7 +183,6 @@ func file_shortener_v1_shortener_proto_init() {
 	if File_shortener_v1_shortener_proto != nil {
 		return
 	}
-	file_shortcode_v1_shortcode_proto_init()
 	file_shortener_v1_shortener_proto_msgTypes[0].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
