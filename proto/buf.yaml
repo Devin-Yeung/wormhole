@@ -1,0 +1,13 @@
+# buf.yaml — buf module configuration for the wormhole proto sources.
+version: v2
+breaking:
+  use:
+    - FILE
+lint:
+  use:
+    - STANDARD
+  # ENUM_ZERO_VALUE_SUFFIX would require renaming SHORT_CODE_KIND_GENERATED = 0
+  # to SHORT_CODE_KIND_UNSPECIFIED, changing the wire format for existing data.
+  # Excluded until a planned migration of stored values is done.
+  except:
+    - ENUM_ZERO_VALUE_SUFFIX

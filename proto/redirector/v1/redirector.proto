@@ -1,10 +1,10 @@
 syntax = "proto3";
 
 package redirector.v1;
-option go_package = "github.com/Devin-Yeung/wormhole/analytics/pb";
 
-import "google/protobuf/timestamp.proto";
-import "v1/shortcode.proto";
+option go_package = "github.com/Devin-Yeung/wormhole/analytics/pb/v1;pb";
+
+import "shortcode/v1/shortcode.proto";
 
 service RedirectorService {
   // Resolves a short code to its destination URL.
@@ -13,7 +13,7 @@ service RedirectorService {
   // - INVALID_ARGUMENT: short_code is malformed.
   // - NOT_FOUND: short code does not exist or is expired.
   // - UNAVAILABLE/DEADLINE_EXCEEDED/INTERNAL: backend/cache/storage failures.
-  rpc Resolve (ResolveRequest) returns (ResolveResponse);
+  rpc Resolve(ResolveRequest) returns (ResolveResponse);
 }
 
 message ResolveRequest {

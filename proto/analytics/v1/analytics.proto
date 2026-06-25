@@ -1,7 +1,8 @@
 syntax = "proto3";
 
 package analytics.v1;
-option go_package = "github.com/Devin-Yeung/wormhole/analytics/pb";
+
+option go_package = "github.com/Devin-Yeung/wormhole/analytics/pb/v1;pb";
 
 message UrlRedirectedEvent {
   // Unique identifier for the event.

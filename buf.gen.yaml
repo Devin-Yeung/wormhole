@@ -1,0 +1,18 @@
+# buf.gen.yaml — code generation configuration for the buf toolchain.
+#
+# Run `buf generate` from the project root to regenerate all proto outputs.
+version: v2
+inputs:
+  - directory: proto
+plugins:
+  # Go message and gRPC service stubs for the analytics service.
+  # Output path is computed by stripping the Go module prefix from go_package,
+  # so `github.com/Devin-Yeung/wormhole/analytics/pb/v1;pb` → analytics/pb/v1/.
+  - local: protoc-gen-go
+    out: analytics
+    opt:
+      - module=github.com/Devin-Yeung/wormhole/analytics
+  - local: protoc-gen-go-grpc
+    out: analytics
+    opt:
+      - module=github.com/Devin-Yeung/wormhole/analytics

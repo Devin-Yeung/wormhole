@@ -30,6 +30,7 @@
     # grpc tools
     grpc-health-probe
     grpcurl
+    buf
     protobuf
     protoc-gen-go
     protoc-gen-go-grpc
@@ -67,12 +68,7 @@
     update-go-pb = {
       description = "update generated Go protobuf files";
       exec = ''
-        ${pkgs.protobuf}/bin/protoc proto/**/*.proto \
-            --go_out=./analytics/pb \
-            --go-grpc_out=./analytics/pb \
-            --go_opt=paths=source_relative \
-            --go-grpc_opt=paths=source_relative \
-            --proto_path=proto # define the proto path for imports
+        ${pkgs.buf}/bin/buf generate
       '';
     };
   };
@@ -100,6 +96,12 @@
       update-go-pb = {
         enable = true;
         entry = "update-go-pb";
+        files = "\\.proto$";
+        pass_filenames = false;
+      };
+      buf-lint = {
+        enable = true;
+        entry = "${pkgs.buf}/bin/buf lint proto";
         files = "\\.proto$";
         pass_filenames = false;
       };
