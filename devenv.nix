@@ -101,7 +101,7 @@
       };
       buf-lint = {
         enable = true;
-        entry = "${pkgs.buf}/bin/buf lint proto";
+        entry = "${pkgs.buf}/bin/buf lint";
         files = "\\.proto$";
         pass_filenames = false;
       };

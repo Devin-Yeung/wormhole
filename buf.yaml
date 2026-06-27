@@ -1,0 +1,12 @@
+# buf.yaml — workspace configuration for wormhole proto sources.
+version: v2
+modules:
+  - path: proto
+deps:
+  - buf.build/googleapis/googleapis
+breaking:
+  use:
+    - FILE
+lint:
+  use:
+    - STANDARD

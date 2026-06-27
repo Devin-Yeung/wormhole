@@ -33,6 +33,7 @@ impl TryInto<core::ShortCode> for &ShortCode {
             }
             ShortCodeKind::Custom => core::ShortCode::custom(self.code.as_str())
                 .map_err(|_| ConversionError::MalformedCode(self.code.clone())),
+            ShortCodeKind::Unspecified => Err(ConversionError::InvalidKind(self.kind)),
         }
     }
 }
