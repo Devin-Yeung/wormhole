@@ -21,5 +21,12 @@ gateway:
     --bin gateway \
     | lnav
 
+tinyflake:
+  watchexec \
+    -e rs \
+    -- cargo run --quiet \
+    --bin tinyflake \
+    | lnav
+
 compile-go-proto:
     update-go-pb

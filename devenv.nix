@@ -107,8 +107,8 @@
       };
       update-sqlc-generated = {
         enable = true;
-        entry = "${lib.getExe pkgs.sqlc} generate -f analytics/sqlc.yaml";
-        files = "analytics\/sqlc\/.*\.sql";
+        entry = "${lib.getExe pkgs.sqlc} generate -f services/analytics/sqlc.yaml";
+        files = "services\/analytics\/sqlc\/.*\.sql";
         pass_filenames = false;
       };
     };

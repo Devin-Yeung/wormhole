@@ -19,14 +19,28 @@ services:
       start_period: 30s
     volumes:
       - mysql_data:/var/lib/mysql
-  shortener:
+  tinyflake:
     image: ghcr.io/devin-yeung/wormhole:latest
-    container_name: wormhole-shortener
-    command: shortener
+    container_name: wormhole-tinyflake
+    command: tinyflake
     environment:
-      - WORMHOLE_SHORTENER_STORAGE_BACKEND=mysql
-      - WORMHOLE_SHORTENER_MYSQL_DSN=mysql://root:root@mysql:3306/wormhole
-      - WORMHOLE_SHORTENER_GENERATOR_NODE_ID=0
+      - TINYFLAKE_NODE_ID=0
+      - TINYFLAKE_START_EPOCH=2024-01-01T00:00:00Z
+      - TINYFLAKE_ADDR=0.0.0.0:50053
+    healthcheck:
+      test: ["CMD", "grpc-health-probe", "-addr=:50053"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+  shortener:
+    # TODO: replace with Go image once services/shortener is implemented
+    image: ghcr.io/devin-yeung/wormhole-shortener:latest
+    container_name: wormhole-shortener
+    environment:
+      - SHORTENER_MYSQL_DSN=root:root@tcp(mysql:3306)/wormhole
+      - SHORTENER_TINYFLAKE_ADDR=tinyflake:50053
+      - SHORTENER_ADDR=0.0.0.0:50051
     healthcheck:
       test: ["CMD", "grpc-health-probe", "-addr=:50051"]
       interval: 30s
@@ -36,13 +50,16 @@ services:
     depends_on:
       mysql:
         condition: service_healthy
+      tinyflake:
+        condition: service_healthy
   redirector:
-    image: ghcr.io/devin-yeung/wormhole:latest
+    # TODO: replace with Go image once services/redirector is implemented
+    image: ghcr.io/devin-yeung/wormhole-redirector:latest
     container_name: wormhole-redirector
-    command: redirector
     environment:
-      - WORMHOLE_REDIRECTOR_REDIS_URL=redis://redis:6379
-      - WORMHOLE_REDIRECTOR_MYSQL_DSN=mysql://root:root@mysql:3306/wormhole
+      - REDIRECTOR_REDIS_URL=redis://redis:6379
+      - REDIRECTOR_MYSQL_DSN=root:root@tcp(mysql:3306)/wormhole
+      - REDIRECTOR_ADDR=0.0.0.0:50052
     healthcheck:
       test: ["CMD", "grpc-health-probe", "-addr=:50052"]
       interval: 30s

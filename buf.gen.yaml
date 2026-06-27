@@ -7,23 +7,60 @@ version: v2
 inputs:
   - directory: proto
 plugins:
-  # Go message types. Each proto package maps to its own Go package so that
-  # consumers can import only what they need, and package-level names are
-  # unambiguous even when multiple proto packages are in scope.
+  # ── analytics service ──────────────────────────────────────────────────────
   - local: protoc-gen-go
-    out: analytics/gen
+    out: services/analytics/gen
     opt:
       - Manalytics/v1/analytics.proto=github.com/Devin-Yeung/wormhole/analytics/gen/analytics/v1;analyticsv1
       - Mshortcode/v1/shortcode.proto=github.com/Devin-Yeung/wormhole/analytics/gen/shortcode/v1;shortcodev1
       - Mshortener/v1/shortener.proto=github.com/Devin-Yeung/wormhole/analytics/gen/shortener/v1;shortenerv1
       - Mredirector/v1/redirector.proto=github.com/Devin-Yeung/wormhole/analytics/gen/redirector/v1;redirectorv1
+      - Mtinyflake/v1/tinyflake.proto=github.com/Devin-Yeung/wormhole/analytics/gen/tinyflake/v1;tinyflakev1
       - paths=source_relative
-  # gRPC service stubs (only shortener and redirector define services).
   - local: protoc-gen-go-grpc
-    out: analytics/gen
+    out: services/analytics/gen
     opt:
       - Manalytics/v1/analytics.proto=github.com/Devin-Yeung/wormhole/analytics/gen/analytics/v1;analyticsv1
       - Mshortcode/v1/shortcode.proto=github.com/Devin-Yeung/wormhole/analytics/gen/shortcode/v1;shortcodev1
       - Mshortener/v1/shortener.proto=github.com/Devin-Yeung/wormhole/analytics/gen/shortener/v1;shortenerv1
       - Mredirector/v1/redirector.proto=github.com/Devin-Yeung/wormhole/analytics/gen/redirector/v1;redirectorv1
+      - Mtinyflake/v1/tinyflake.proto=github.com/Devin-Yeung/wormhole/analytics/gen/tinyflake/v1;tinyflakev1
+      - paths=source_relative
+  # ── shortener service ──────────────────────────────────────────────────────
+  - local: protoc-gen-go
+    out: services/shortener/gen
+    opt:
+      - Manalytics/v1/analytics.proto=github.com/Devin-Yeung/wormhole/services/shortener/gen/analytics/v1;analyticsv1
+      - Mshortcode/v1/shortcode.proto=github.com/Devin-Yeung/wormhole/services/shortener/gen/shortcode/v1;shortcodev1
+      - Mshortener/v1/shortener.proto=github.com/Devin-Yeung/wormhole/services/shortener/gen/shortener/v1;shortenerv1
+      - Mredirector/v1/redirector.proto=github.com/Devin-Yeung/wormhole/services/shortener/gen/redirector/v1;redirectorv1
+      - Mtinyflake/v1/tinyflake.proto=github.com/Devin-Yeung/wormhole/services/shortener/gen/tinyflake/v1;tinyflakev1
+      - paths=source_relative
+  - local: protoc-gen-go-grpc
+    out: services/shortener/gen
+    opt:
+      - Manalytics/v1/analytics.proto=github.com/Devin-Yeung/wormhole/services/shortener/gen/analytics/v1;analyticsv1
+      - Mshortcode/v1/shortcode.proto=github.com/Devin-Yeung/wormhole/services/shortener/gen/shortcode/v1;shortcodev1
+      - Mshortener/v1/shortener.proto=github.com/Devin-Yeung/wormhole/services/shortener/gen/shortener/v1;shortenerv1
+      - Mredirector/v1/redirector.proto=github.com/Devin-Yeung/wormhole/services/shortener/gen/redirector/v1;redirectorv1
+      - Mtinyflake/v1/tinyflake.proto=github.com/Devin-Yeung/wormhole/services/shortener/gen/tinyflake/v1;tinyflakev1
+      - paths=source_relative
+  # ── redirector service ─────────────────────────────────────────────────────
+  - local: protoc-gen-go
+    out: services/redirector/gen
+    opt:
+      - Manalytics/v1/analytics.proto=github.com/Devin-Yeung/wormhole/services/redirector/gen/analytics/v1;analyticsv1
+      - Mshortcode/v1/shortcode.proto=github.com/Devin-Yeung/wormhole/services/redirector/gen/shortcode/v1;shortcodev1
+      - Mshortener/v1/shortener.proto=github.com/Devin-Yeung/wormhole/services/redirector/gen/shortener/v1;shortenerv1
+      - Mredirector/v1/redirector.proto=github.com/Devin-Yeung/wormhole/services/redirector/gen/redirector/v1;redirectorv1
+      - Mtinyflake/v1/tinyflake.proto=github.com/Devin-Yeung/wormhole/services/redirector/gen/tinyflake/v1;tinyflakev1
+      - paths=source_relative
+  - local: protoc-gen-go-grpc
+    out: services/redirector/gen
+    opt:
+      - Manalytics/v1/analytics.proto=github.com/Devin-Yeung/wormhole/services/redirector/gen/analytics/v1;analyticsv1
+      - Mshortcode/v1/shortcode.proto=github.com/Devin-Yeung/wormhole/services/redirector/gen/shortcode/v1;shortcodev1
+      - Mshortener/v1/shortener.proto=github.com/Devin-Yeung/wormhole/services/redirector/gen/shortener/v1;shortenerv1
+      - Mredirector/v1/redirector.proto=github.com/Devin-Yeung/wormhole/services/redirector/gen/redirector/v1;redirectorv1
+      - Mtinyflake/v1/tinyflake.proto=github.com/Devin-Yeung/wormhole/services/redirector/gen/tinyflake/v1;tinyflakev1
       - paths=source_relative

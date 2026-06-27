@@ -92,48 +92,41 @@
             ];
           };
 
-        # gateway
+        # Rust services
         wormhole-gateway = craneLib.buildPackage (
           individualCrateArgs
           // {
             inherit cargoArtifacts;
             pname = "wormhole-gateway";
             cargoExtraArgs = "-p wormhole-gateway";
-            src = fileSetForCrate ./crates/wormhole-gateway;
+            src = fileSetForCrate ./services/gateway;
           }
         );
-        # redirector service
-        wormhole-redirector = craneLib.buildPackage (
+        wormhole-tinyflake = craneLib.buildPackage (
           individualCrateArgs
           // {
             inherit cargoArtifacts;
-            pname = "wormhole-redirector";
-            cargoExtraArgs = "-p wormhole-redirector";
-            src = fileSetForCrate ./crates/wormhole-redirector;
-          }
-        );
-        # shortener service
-        wormhole-shortener = craneLib.buildPackage (
-          individualCrateArgs
-          // {
-            inherit cargoArtifacts;
-            pname = "wormhole-shortener";
-            cargoExtraArgs = "-p wormhole-shortener";
-            src = fileSetForCrate ./crates/wormhole-shortener;
+            pname = "wormhole-tinyflake";
+            cargoExtraArgs = "-p wormhole-tinyflake";
+            src = fileSetForCrate ./services/tinyflake;
           }
         );
 
+        # Go services
         wormhole-analytics = buildGoApplication {
           pname = "wormhole-analytics";
           version = "0.1.0";
-          src = ./analytics;
-          modules = ./analytics/gomod2nix.toml;
+          src = ./services/analytics;
+          modules = ./services/analytics/gomod2nix.toml;
           subPackages = [ "cmd/server" ];
           go = pkgs.go_1_25;
           postInstall = ''
             mv $out/bin/server $out/bin/analytics
           '';
         };
+        # TODO: add wormhole-shortener and wormhole-redirector Go builds here
+        # once services/shortener/gomod2nix.toml and services/redirector/gomod2nix.toml
+        # are generated (run `gomod2nix generate` inside each service directory).
 
         image = pkgs.dockerTools.buildLayeredImage {
           name = "wormhole";
@@ -141,8 +134,8 @@
 
           contents = [
             wormhole-gateway
-            wormhole-redirector
-            wormhole-shortener
+            wormhole-tinyflake
+            wormhole-analytics
             pkgs.grpc-health-probe
           ];
 
@@ -155,9 +148,8 @@
       {
         checks = {
           inherit
-            wormhole-redirector
-            wormhole-shortener
             wormhole-gateway
+            wormhole-tinyflake
             wormhole-analytics
             image
             ;
@@ -203,9 +195,8 @@
 
         packages = {
           inherit
-            wormhole-redirector
-            wormhole-shortener
             wormhole-gateway
+            wormhole-tinyflake
             wormhole-analytics
             image
             ;
